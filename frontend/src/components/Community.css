@@ -1,0 +1,118 @@
+.community-page {
+    max-width: 700px;
+    margin: 2em auto;
+    padding: 0 1em;
+    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  }
+  
+  .community-page h1 {
+    text-align: center;
+    margin-bottom: 1.5em;
+    font-size: 2em;
+    color: #4895ef;
+  }
+  
+  /* Post Form */
+  .post-form, .reply-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    margin-bottom: 1em;
+  }
+  
+  .post-form textarea, .reply-form textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 0.75em;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    resize: vertical;
+    font-family: inherit;
+  }
+  
+  .post-form button, .reply-form button {
+    align-self: flex-end;
+    padding: 0.5em 1.2em;
+    border: none;
+    border-radius: 8px;
+    background-color: #4895ef;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .post-form button:hover, .reply-form button:hover {
+    background-color: #3572c9;
+  }
+  
+  /* Posts */
+  .posts-list .post-card {
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1em;
+    margin-bottom: 1em;
+    transition: box-shadow 0.2s;
+  }
+  
+  .posts-list .post-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .post-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5em;
+    font-size: 0.9em;
+    color: #555;
+  }
+  
+  .username {
+    font-weight: bold;
+    color: #4895ef;
+  }
+  
+  .timestamp {
+    font-style: italic;
+  }
+  
+  .post-content {
+    font-size: 1em;
+    line-height: 1.4;
+  }
+  
+  .reply-button {
+    margin-top: 0.5em;
+    background: none;
+    border: none;
+    color: #4895ef;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .reply-button:hover {
+    text-decoration: underline;
+  }
+  
+  /* Replies */
+  .replies {
+    margin-top: 1em;
+    padding-left: 1em;
+    border-left: 2px solid #4895ef;
+  }
+  
+  .reply-card {
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 0.75em;
+    margin-bottom: 0.5em;
+  }
+  
+  .no-posts {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+  }
+  
