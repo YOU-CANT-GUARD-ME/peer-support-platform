@@ -7,7 +7,6 @@ export default function Home() {
 
   return (
     <div>
-      <Navbar />
       <section className="hero">
         <h1>A Safe Space for Teens to Talk</h1>
         <div className="hero-buttons">
