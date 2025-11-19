@@ -1,9 +1,5 @@
 import React, { useState } from "react";
 import '../css/Diary.css';
-<<<<<<< HEAD
-=======
-import { motion } from "framer-motion";
->>>>>>> 5643ab6 (애니메이션 추가)
 
 export default function Diary() {
     const [entries, setEntries] = useState([]);
@@ -41,26 +37,8 @@ export default function Diary() {
     return (
         <div className="diary-page">
             <div className="welcome-box">
-<<<<<<< HEAD
                 <h1 className="welcome-text">Welcome to Diary page</h1>
                 <p>기뻤던, 혹은 슬펐던 나만의 하루를 기록하세요.</p>
-=======
-                <motion.h1
-                    className="welcome-text"
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
-                >
-                    Welcome to Diary page
-                </motion.h1>
-                <motion.p
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
-                >
-                    기뻤던, 혹은 슬펐던 나만의 하루를 기록하세요.
-                </motion.p>
->>>>>>> 5643ab6 (애니메이션 추가)
             </div>
 
             <div className="post-btn" onClick={() => setIsModalOpen(true)}>+</div>
