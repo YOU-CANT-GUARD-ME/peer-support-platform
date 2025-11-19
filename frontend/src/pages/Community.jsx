@@ -1,17 +1,14 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useState } from "react";
 import '../css/Community.css';
 import PostIcon from '../assets/post-icon.png';
 import ProfileIcon from '../assets/profile.jpg';
-
-const API_BASE_URL = "http://localhost:5000/api"; // make sure backend is running
 
 export default function Community() {
   const [posts, setPosts] = useState([]);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
-  const [currentPostId, setCurrentPostId] = useState(null);
+  const [currentPostId, setCurrentPostId] = useState(null); // 댓글 모달용
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
@@ -23,82 +20,54 @@ export default function Community() {
     return `${year}.${month}.${day}`;
   };
 
-  // --- Fetch posts from backend ---
-  useEffect(() => {
-    fetchPosts();
-  }, []);
-
-  const fetchPosts = async () => {
-    try {
-      const res = await axios.get(`${API_BASE_URL}/posts`);
-      const mapped = res.data.map(p => ({
-        id: p._id,
-        title: p.title,
-        content: p.content,
-        nickname: "anonymous",
-        date: formatDate(p.createdAt),
-        comments: p.comments.map(c => ({
-          id: c._id,
-          text: c.content,
-          nickname: c.username,
-          date: formatDate(c.createdAt),
-        }))
-      }));
-      setPosts(mapped);
-    } catch (err) {
-      console.error("Failed to fetch posts:", err);
-    }
-  };
-
-  // --- Create or Edit Post ---
-  const handleSubmitPost = async () => {
+  // 글 작성 / 수정
+  const handleSubmitPost = () => {
     if (!title.trim() || !content.trim()) return;
 
-    try {
-      if (editingPost) {
-        await axios.patch(`${API_BASE_URL}/posts/${editingPost.id}`, {
-          title,
-          content
-        });
-      } else {
-        await axios.post(`${API_BASE_URL}/posts`, { title, content });
-      }
-
-      setTitle("");
-      setContent("");
-      setEditingPost(null);
-      setIsPostModalOpen(false);
-      fetchPosts();
-    } catch (err) {
-      console.error("Failed to submit post:", err);
+    if (editingPost) {
+      setPosts(posts.map(p =>
+        p.id === editingPost.id ? { ...p, title, content } : p
+      ));
+    } else {
+      const newPost = {
+        id: Date.now(),
+        title,
+        content,
+        nickname: "anonymous",
+        date: formatDate(new Date()),
+        comments: [],
+      };
+      setPosts([newPost, ...posts]);
     }
+
+    setTitle("");
+    setContent("");
+    setEditingPost(null);
+    setIsPostModalOpen(false);
   };
 
-  // --- Delete Post ---
-  const handleDeletePost = async (id) => {
-    try {
-      await axios.delete(`${API_BASE_URL}/posts/${id}`);
-      fetchPosts();
-    } catch (err) {
-      console.error("Failed to delete post:", err);
-    }
+  // 글 삭제
+  const handleDeletePost = (id) => {
+    setPosts(posts.filter(post => post.id !== id));
   };
 
-  // --- Add Comment ---
-  const handleAddComment = async (postId, commentText) => {
+  // 댓글 추가
+  const handleAddComment = (postId, commentText) => {
     if (!commentText.trim()) return;
-
-    try {
-      await axios.post(`${API_BASE_URL}/posts/${postId}/comments`, {
-        username: "anonymous",
-        content: commentText
-      });
-      fetchPosts();
-    } catch (err) {
-      console.error("Failed to add comment:", err);
-    }
+    setPosts(posts.map(post =>
+      post.id === postId
+        ? {
+            ...post,
+            comments: [
+              ...post.comments,
+              { id: Date.now(), text: commentText, nickname: "anonymous", date: formatDate(new Date()) }
+            ]
+          }
+        : post
+    ));
   };
 
+  // 댓글 모달 열기
   const openCommentModal = (postId) => {
     setCurrentPostId(postId);
     setIsCommentModalOpen(true);
@@ -108,7 +77,7 @@ export default function Community() {
 
   return (
     <div className="community-page">
-      
+      <h1 className="welcome-text">Welcome to Community</h1>
       {/* 글쓰기 버튼 */}
       <div className="post-btn" onClick={() => setIsPostModalOpen(true)}>
         <img src={PostIcon} alt="post icon" />
@@ -123,7 +92,6 @@ export default function Community() {
                 <img src={ProfileIcon} alt="profile" className="profile-icon" />
                 <strong>{post.nickname}</strong> - <span>{post.date}</span>
               </div>
-
               <h2>{post.title}</h2>
               <p>{post.content}</p>
 
@@ -134,19 +102,15 @@ export default function Community() {
                   setContent(post.content);
                   setIsPostModalOpen(true);
                 }}>수정</button>
-
                 <button onClick={() => handleDeletePost(post.id)}>삭제</button>
-
-                <button onClick={() => openCommentModal(post.id)}>
-                  댓글 ({post.comments.length})
-                </button>
+                <button onClick={() => openCommentModal(post.id)}>댓글 ({post.comments.length})</button>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* 글 작성 모달 */}
+      {/* 글 작성 / 수정 모달 */}
       {isPostModalOpen && (
         <div className="modal-backdrop">
           <div className="modal">
@@ -161,7 +125,6 @@ export default function Community() {
               value={content}
               onChange={(e) => setContent(e.target.value)}
             />
-
             <div className="modal-buttons">
               <button onClick={() => {
                 setIsPostModalOpen(false);
@@ -169,7 +132,6 @@ export default function Community() {
                 setTitle("");
                 setContent("");
               }}>취소</button>
-
               <button onClick={handleSubmitPost}>확인</button>
             </div>
           </div>
@@ -181,7 +143,6 @@ export default function Community() {
         <div className="modal-backdrop">
           <div className="modal coment-modal">
             <h3>댓글 - {currentPost.title}</h3>
-
             <div className="comments-list">
               {currentPost.comments.map(c => (
                 <div key={c.id} className="comment">
@@ -189,12 +150,7 @@ export default function Community() {
                 </div>
               ))}
             </div>
-
-            <CommentInput
-              postId={currentPost.id}
-              onAddComment={handleAddComment}
-            />
-
+            <CommentInput postId={currentPost.id} onAddComment={handleAddComment} />
             <div className="modal-buttons">
               <button onClick={() => setIsCommentModalOpen(false)}>닫기</button>
             </div>
@@ -205,6 +161,7 @@ export default function Community() {
   );
 }
 
+// 댓글 입력 컴포넌트
 function CommentInput({ postId, onAddComment }) {
   const [commentText, setCommentText] = useState("");
 

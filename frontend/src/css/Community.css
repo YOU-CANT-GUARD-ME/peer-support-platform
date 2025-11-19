@@ -14,8 +14,14 @@ body {
 .community-page {
   padding: 100px 0 150px;
   display: flex;
+  gap: 100px;
   flex-direction: column;
   align-items: center;
+}
+
+.welcome-text {
+  font-size: 40px;
+  color: #0077cc;
 }
 
 /* 게시글 리스트 */
@@ -111,7 +117,7 @@ body {
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  box-shadow: 0 8px 20px rgba(0,119,204,0.35);
+  /* box-shadow: 0 8px 20px rgba(0,119,204,0.35); */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -125,6 +131,8 @@ body {
 
 .post-btn img {
   width: 40px;
+  position: absolute;
+  top: 12px;
   pointer-events: none;
 }
 

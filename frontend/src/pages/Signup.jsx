@@ -1,4 +1,6 @@
+import React, { useState } from "react";
 import '../css/sign.css'
+import { Link } from "react-router-dom";
 
 export default function SignUp() {
   const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
@@ -19,7 +21,7 @@ export default function SignUp() {
   return (
     <div className="signup-wrapper">
       <form className="signup-box" onSubmit={handleSubmit}>
-        <h2 className="signup-title">회원가입</h2>
+        <h2 className="signup-title">Sign Up</h2>
 
         <div className="input-group">
           <label>실명</label>
