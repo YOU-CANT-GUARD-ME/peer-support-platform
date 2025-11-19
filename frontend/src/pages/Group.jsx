@@ -1,5 +1,9 @@
 import React, { useState } from "react";
 import '../css/Group.css'
+<<<<<<< HEAD
+=======
+import { motion } from "framer-motion";
+>>>>>>> 5643ab6 (애니메이션 추가)
 import { Link } from "react-router-dom";
 
 export default function Group() {
@@ -33,10 +37,30 @@ export default function Group() {
     return (
         <div className="groups-page">
             <div className="welcome-box">
+<<<<<<< HEAD
                 <h1 className="welcome-group-text">Welcome to Group Community</h1>
                 <p>당신만의 그룹을 추가하고 가입해보세요.</p>
             </div>
             
+=======
+                <motion.h1
+                    className="welcome-text"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                >
+                    Welcome to Group Community
+                </motion.h1>
+                <motion.p
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
+                >
+                    당신만의 그룹을 추가하고 가입해보세요.
+                </motion.p>
+            </div>
+
+>>>>>>> 5643ab6 (애니메이션 추가)
             <div className="create-btn" onClick={() => setIsModalOpen(true)}>+</div>
 
             <div className="group-list">

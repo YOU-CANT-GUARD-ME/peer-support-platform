@@ -1,5 +1,9 @@
 import React, { useState } from "react";
 import '../css/Community.css';
+<<<<<<< HEAD
+=======
+import { motion } from "framer-motion";
+>>>>>>> 5643ab6 (애니메이션 추가)
 import ProfileIcon from '../assets/profile.jpg';
 
 export default function Community() {
@@ -56,12 +60,21 @@ export default function Community() {
     setPosts(posts.map(post =>
       post.id === postId
         ? {
+<<<<<<< HEAD
             ...post,
             comments: [
               ...post.comments,
               { id: Date.now(), text: commentText, nickname: "anonymous", date: formatDate(new Date()) }
             ]
           }
+=======
+          ...post,
+          comments: [
+            ...post.comments,
+            { id: Date.now(), text: commentText, nickname: "anonymous", date: formatDate(new Date()) }
+          ]
+        }
+>>>>>>> 5643ab6 (애니메이션 추가)
         : post
     ));
   };
@@ -76,10 +89,31 @@ export default function Community() {
 
   return (
     <div className="community-page">
+<<<<<<< HEAD
      <div className="welcome-box">
        <h1 className="welcome-text">Welcome to Community</h1>
       <p>언제든 위로받고 싶을 땐 여기로 찾아오세요.</p>
      </div>
+=======
+      <div className="welcome-box">
+        <motion.h1
+          className="welcome-text"
+          initial={{ opacity: 0, y: 15 }}   
+          animate={{ opacity: 1, y: 0 }}    
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          Welcome to Community
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.3, ease: "easeOut" }} 
+        >
+          언제든 위로받고 싶을 땐 여기로 찾아오세요.
+        </motion.p>
+      </div>
+
+>>>>>>> 5643ab6 (애니메이션 추가)
       {/* 글쓰기 버튼 */}
       <div className="post-btn" onClick={() => setIsPostModalOpen(true)}>+</div>
 
