@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import '../css/Diary.css';
+import { motion } from "framer-motion"
 
 export default function Diary() {
     const [entries, setEntries] = useState([]);
@@ -36,10 +37,23 @@ export default function Diary() {
 
     return (
         <div className="diary-page">
-            <div className="welcome-box">
-                <h1 className="welcome-text">Welcome to Diary page</h1>
-                <p>기뻤던, 혹은 슬펐던 나만의 하루를 기록하세요.</p>
-            </div>
+                 <div className="welcome-box">
+                    <motion.h1
+                      className="welcome-text"
+                      initial={{ opacity: 0, y: 15 }} 
+                      animate={{ opacity: 1, y: 0 }}    
+                      transition={{ duration: 1, ease: "easeOut" }}
+                    >
+                      Welcome to Diary page
+                    </motion.h1>
+                    <motion.p
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 1, delay: 0.3, ease: "easeOut" }} 
+                    >
+                      기뻤던, 혹은 슬펐던 나만의 하루를 기록하세요.
+                    </motion.p>
+                  </div>
 
             <div className="post-btn" onClick={() => setIsModalOpen(true)}>+</div>
 

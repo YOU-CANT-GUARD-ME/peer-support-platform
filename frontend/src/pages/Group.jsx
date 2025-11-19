@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import '../css/Group.css'
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion"
 
 export default function Group() {
     const [groups, setGroups] = useState([]);
@@ -33,9 +34,22 @@ export default function Group() {
     return (
         <div className="groups-page">
             <div className="welcome-box">
-                <h1 className="welcome-group-text">Welcome to Group Community</h1>
-                <p>당신만의 그룹을 추가하고 가입해보세요.</p>
-            </div>
+        <motion.h1
+          className="welcome-text"
+          initial={{ opacity: 0, y: 15 }} 
+          animate={{ opacity: 1, y: 0 }}    
+          transition={{ duration: 1, ease: "easeOut" }}
+        >
+          Welcome to Group Community
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.3, ease: "easeOut" }} 
+        >
+          당신만의 그룹을 만들고 가입하세요.
+        </motion.p>
+      </div>
             
             <div className="create-btn" onClick={() => setIsModalOpen(true)}>+</div>
 
