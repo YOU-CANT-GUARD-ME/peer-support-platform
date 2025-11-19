@@ -1,0 +1,123 @@
+.groups-page {
+    padding: 2em;
+    max-width: 1000px;
+    margin: auto;
+}
+
+.create-btn {
+    background: #4895ef;
+    color: white;
+    width: 120px;
+    padding: 0.7em;
+    text-align: center;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 1.5em;
+    transition: 0.3s;
+}
+
+.create-btn:hover {
+    background: #3b7bd3;
+}
+
+.group-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2em;
+}
+
+.group-card {
+    width: 100%;
+    padding: 1.5em;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.group-card h2 {
+    margin-bottom: 0.4em;
+}
+
+.g-desc {
+    color: #555;
+    margin-bottom: 1em;
+}
+
+.g-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1em;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.join-btn {
+    text-decoration: none;
+    text-align: center;
+    width: 100%;
+    padding: 0.8em;
+    background: #4895ef;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.join-btn:hover {
+    background: #3b7bd3;
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal {
+    width: 400px;
+    background: white;
+    padding: 2em;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+.modal input,
+.modal textarea {
+    width: 100%;
+    padding: 0.8em;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+}
+
+.modal-buttons * {
+    width: 48%;
+    padding: 0.8em;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background: #4895ef;
+    color: white;
+    text-decoration: none;
+    text-align: center;
+}
+
+.modal-buttons button:hover {
+    background: #3b7bd3;
+}
