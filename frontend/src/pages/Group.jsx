@@ -32,7 +32,12 @@ export default function Group() {
 
     return (
         <div className="groups-page">
-            <div className="create-btn" onClick={() => setIsModalOpen(true)}>그룹 생성</div>
+            <div className="welcome-box">
+                <h1 className="welcome-group-text">Welcome to Group Community</h1>
+                <p>당신만의 그룹을 추가하고 가입해보세요.</p>
+            </div>
+            
+            <div className="create-btn" onClick={() => setIsModalOpen(true)}>+</div>
 
             <div className="group-list">
                 {groups.map((g) => (

@@ -38,13 +38,13 @@ body {
   border-radius: 18px;
   background: #fff;
   border: 1px solid #e3e5e9;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   transition: 0.2s ease;
 }
 
 .post:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
 /* 글 상단 프로필 */
@@ -114,10 +114,11 @@ body {
   right: 25px;
   bottom: 25px;
   background: #0077cc;
+  font-size: 40px;
+  color: white;
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  /* box-shadow: 0 8px 20px rgba(0,119,204,0.35); */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -129,18 +130,11 @@ body {
   transform: scale(1.08);
 }
 
-.post-btn img {
-  width: 40px;
-  position: absolute;
-  top: 12px;
-  pointer-events: none;
-}
-
 /* 모달 배경 */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.28);
+  background: rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(3px);
   display: flex;
   justify-content: center;
@@ -158,7 +152,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
   animation: popIn 0.25s ease;
 }
 
@@ -177,7 +171,7 @@ body {
 .modal input:focus,
 .modal textarea:focus {
   border-color: #0077cc;
-  box-shadow: 0 0 0 3px rgba(0,119,204,0.15);
+  box-shadow: 0 0 0 3px rgba(0, 119, 204, 0.15);
 }
 
 .modal textarea {
@@ -280,8 +274,13 @@ body {
 
 /* 애니메이션 */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes popIn {
@@ -289,6 +288,7 @@ body {
     opacity: 0;
     transform: scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: scale(1);

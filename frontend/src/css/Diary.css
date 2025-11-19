@@ -1,0 +1,152 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+.diary-page {
+    padding: 100px 0 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 100px;
+}
+
+.post-btn {
+    position: fixed;
+    right: 25px;
+    bottom: 25px;
+    background: #0077cc;
+    font-size: 40px;
+    color: white;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.post-btn:hover {
+    transform: scale(1.08);
+}
+
+.diary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 15px;
+}
+
+.diary-card {
+    width: 300px;
+    height: 150px;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.diary-emotion {
+    font-weight: bold;
+    font-size: 16px;
+    color: #4895ef;
+}
+
+.diary-content {
+    font-size: 14px;
+    color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.diary-date {
+    font-size: 12px;
+    color: #999;
+    margin-top: auto;
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    width: 500px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    overflow-y: auto;
+}
+
+.emotion-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.emotion-selector button {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    background: #f5f5f5;
+    transition: 0.2s;
+}
+
+.emotion-selector button.selected {
+    background-color: #4895ef;
+    color: #fff;
+    border: none;
+}
+
+textarea {
+    width: 100%;
+    height: 150px;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #d5d5d5;
+    resize: none;
+    font-size: 14px;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.modal-buttons button {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.modal-buttons button:first-child {
+    background: #ccc;
+}
+
+.modal-buttons button:last-child {
+    background: #4895ef;
+    color: #fff;
+}

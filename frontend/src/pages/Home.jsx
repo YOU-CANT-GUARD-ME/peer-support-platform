@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Navbar from "../components/Navbar"; // adjust path if Navbar is in components
 import "../index.css"; // assuming your CSS is in src/index.css
 
 export default function Home() {

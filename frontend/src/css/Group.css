@@ -1,26 +1,51 @@
 .groups-page {
-    padding: 2em;
+    padding: 100px 0 150px;
     max-width: 1000px;
     margin: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 100px;
+    align-items: center;
+}
+
+.welcome-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    & p {
+        color: #818181;
+    }
+}
+
+.welcome-group-text {
+    font-size: 40px;
+    color: #0077cc;
 }
 
 .create-btn {
-    background: #4895ef;
+    position: fixed;
+    right: 25px;
+    bottom: 25px;
+    background: #0077cc;
+    font-size: 40px;
     color: white;
-    width: 120px;
-    padding: 0.7em;
-    text-align: center;
-    border-radius: 6px;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     cursor: pointer;
-    margin-bottom: 1.5em;
-    transition: 0.3s;
+    transition: 0.2s;
 }
 
 .create-btn:hover {
-    background: #3b7bd3;
+    transform: scale(1.08);
 }
 
 .group-list {
+    width: 1000px;
     display: flex;
     flex-direction: column;
     gap: 1.2em;

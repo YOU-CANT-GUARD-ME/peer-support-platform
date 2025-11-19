@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import '../css/Community.css';
-import PostIcon from '../assets/post-icon.png';
 import ProfileIcon from '../assets/profile.jpg';
 
 export default function Community() {
@@ -77,11 +76,12 @@ export default function Community() {
 
   return (
     <div className="community-page">
-      <h1 className="welcome-text">Welcome to Community</h1>
+     <div className="welcome-box">
+       <h1 className="welcome-text">Welcome to Community</h1>
+      <p>언제든 위로받고 싶을 땐 여기로 찾아오세요.</p>
+     </div>
       {/* 글쓰기 버튼 */}
-      <div className="post-btn" onClick={() => setIsPostModalOpen(true)}>
-        <img src={PostIcon} alt="post icon" />
-      </div>
+      <div className="post-btn" onClick={() => setIsPostModalOpen(true)}>+</div>
 
       {/* 게시글 리스트 */}
       {posts.length > 0 && (

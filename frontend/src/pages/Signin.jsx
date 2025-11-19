@@ -30,7 +30,7 @@ export default function SignIn() {
                     <label>비밀번호</label>
                     <input
                         type="password"
-                        placeholder="password"
+                        placeholder="********"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
