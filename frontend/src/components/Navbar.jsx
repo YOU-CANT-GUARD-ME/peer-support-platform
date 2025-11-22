@@ -9,11 +9,12 @@ export default function Navbar() {
     <nav className="navbar">
       <Link to='/' className="logo"><img src={logo} alt="logo" /></Link>
       <ul className="nav-links">
-        <Link to='/'>Home</Link>
-        <Link to='/community'>Community</Link>
-        <Link to='/group'>Groups</Link>
-        <Link to='/diary'>Diary</Link>
-        <Link to='/signin'>Login</Link>
+        <Link to='/'>메인</Link>
+        <Link to='/community'>커뮤니티</Link>
+        <Link to='/group'>그룹</Link>
+        <Link to='/diary'>다이어리</Link>
+        <Link to='/counsel'>상담 신청</Link>
+        <Link to='/signin'>로그인</Link>
       </ul>
     </nav>
   );

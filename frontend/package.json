@@ -10,10 +10,6 @@
   },
   "dependencies": {
     "axios": "^1.13.2",
-<<<<<<< HEAD
-=======
-    "framer-motion": "^12.23.24",
->>>>>>> 5643ab6 (애니메이션 추가)
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.9.6"

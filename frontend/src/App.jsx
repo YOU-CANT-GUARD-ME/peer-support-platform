@@ -9,6 +9,7 @@ import SignIn from "./pages/signIn";
 import Group from "./pages/Group";
 import GroupDetail from "./pages/GroupDetail";
 import Diary from "./pages/Diary";
+import Counsel from "./pages/Counsel";
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/group" element={<Group />} />
         <Route path="/group-detail" element={<GroupDetail />} />
         <Route path="/diary" element={<Diary />} />
+        <Route path="/counsel" element={<Counsel />} />
       </Routes>
     </Router>
   );

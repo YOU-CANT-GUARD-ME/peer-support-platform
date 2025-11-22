@@ -80,7 +80,7 @@ export default function Group() {
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                         />
-
+    
                         <input
                             type="number"
                             placeholder="인원 제한"

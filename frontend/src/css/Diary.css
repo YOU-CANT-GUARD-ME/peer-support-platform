@@ -41,49 +41,68 @@
 }
 
 .diary-card {
-    width: 300px;
-    height: 150px;
-    background-color: #fff;
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    width: 250px;
+    min-height: 150px;
+    background: #fff9c4; /* 🟨 포스트잇 색 */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    transform: rotate(-1deg); /* 약간 기울기 */
+    transition: 0.15s;
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 10px;
+    background-size: cover;
+    background-position: center;
+    max-height: 300px;
+    width: 300px;
+}
+
+/* hover 시 살짝 올라오기 */
+.diary-card:hover {
+    transform: rotate(0deg) translateY(-4px);
+    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.2);
 }
 
 .diary-emotion {
     font-weight: bold;
     font-size: 16px;
-    color: #4895ef;
+    color: #e65100;
 }
 
 .diary-content {
     font-size: 14px;
-    color: #333;
+    color: #4a4a4a;
+    line-height: 1.4;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
 }
 
 .diary-date {
     font-size: 12px;
-    color: #999;
+    color: #757575;
     margin-top: auto;
 }
 
-.modal-backdrop {
+.modal-backdrop.themed {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.2);
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
+
 }
 
 .modal {
@@ -96,6 +115,12 @@
     flex-direction: column;
     gap: 15px;
     overflow-y: auto;
+    position: relative;
+    z-index: 1; /* 배경보다 위에 */
+}
+
+.modal > p {
+    width: 100%;
 }
 
 .emotion-selector {
@@ -149,4 +174,39 @@ textarea {
 .modal-buttons button:last-child {
     background: #4895ef;
     color: #fff;
+}
+
+.theme-selector {
+    display: flex;
+    gap: 12px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+
+.theme-option {
+    border: 2px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    width: 110px;
+}
+
+.theme-option.selected-theme {
+    border-color: #0077cc;
+}
+
+.theme-option img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.theme-preview-large {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 10px;
 }
