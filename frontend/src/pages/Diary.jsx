@@ -92,7 +92,7 @@ export default function Diary() {
 
             {/* 작성 모달 */}
             {isModalOpen && (
-                <div className="modal-backdrop">
+                <div className="modal-backdrop" onClick={() => setIsModalOpen(false)}>
                     <div className="modal">
                         <h3>새 일기 작성</h3>
 
@@ -137,11 +137,13 @@ export default function Diary() {
 
             {/* 상세 모달 */}
             {currentEntry && (
-                <div className="modal-backdrop">
+                <div className="modal-backdrop" onClick={() => setIsModalOpen(false)}>
                     {currentEntry && (
                         <div
                             className="modal-backdrop themed"
+                            onClick={(e) => e.stopPropagation()}
                             >
+                                
                             
                             <div className="modal"
                             style={{

@@ -62,8 +62,8 @@ export default function Counsel() {
 
             {/* 상담 신청 모달 */}
             {isOpen && (
-                <div className="modal-backdrop">
-                    <div className="modal">
+                <div className="modal-backdrop" onClick={() => setIsOpen(false)}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <h2>Ako 상담 신청</h2>
 
                         <input
@@ -86,7 +86,7 @@ export default function Counsel() {
                             onChange={(e) => handleChange("time", e.target.value)}
                         >
                             <option value="">시간 선택</option>
-                            <option>점심시간 (12:20 - 1:10)</option>
+                            <option>점심시간 (11:20 - 12:20)</option>
                             <option>방과후 1타임</option>
                             <option>방과후 2타임</option>
                             <option>주말 상담 요청</option>
@@ -108,8 +108,8 @@ export default function Counsel() {
 
             {/* 신청 완료 모달 */}
             {isDone && (
-                <div className="modal-backdrop">
-                    <div className="modal done-modal">
+                <div className="modal-backdrop" onClick={() => setIsOpen(false)}>
+                    <div className="modal done-modal" onClick={(e) => e.stopPropagation()}>
                         <h2>신청 완료!</h2>
                         <p>Ako 상담 동아리가 빠르게 확인할게요.</p>
                         <button

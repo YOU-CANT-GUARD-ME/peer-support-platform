@@ -69,7 +69,7 @@ export default function GroupDetailPage() {
       </aside>
 
       <main className="group-content">
-        <button className="create-post-btn btn" onClick={() => setIsPostModalOpen(true)}>글 작성</button>
+        <button className="create-post-btn btn" onClick={() => setIsPostModalOpen(true)}>+</button>
         {posts.map(post => (
           <div key={post.id} className="group-post">
             <div className="group-post-header">
@@ -94,8 +94,8 @@ export default function GroupDetailPage() {
 
       {/* 글 작성/수정 모달 */}
       {isPostModalOpen && (
-        <div className="modal-backdrop">
-          <div className="modal">
+        <div className="modal-backdrop" onClick={() => setIsPostModalOpen(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
             <input placeholder="제목" value={title} onChange={e => setTitle(e.target.value)} />
             <textarea placeholder="내용" value={content} onChange={e => setContent(e.target.value)} />
             <div className="modal-buttons">
@@ -108,8 +108,8 @@ export default function GroupDetailPage() {
 
       {/* 댓글 모달 */}
       {isCommentModalOpen && currentPost && (
-        <div className="modal-backdrop">
-          <div className="modal comment-modal">
+        <div className="modal-backdrop" onClick={() => setIsCommentModalOpen(false)}>
+          <div className="modal comment-modal" onClick={(e) => e.stopPropagation()}>
             <h3>댓글 - {currentPost.title}</h3>
             <div className="comments-list">
               {currentPost.comments.map(c => (

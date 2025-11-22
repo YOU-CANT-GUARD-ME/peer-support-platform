@@ -127,8 +127,8 @@ export default function Community() {
 
       {/* 글 작성 / 수정 모달 */}
       {isPostModalOpen && (
-        <div className="modal-backdrop">
-          <div className="modal">
+        <div className="modal-backdrop" onClick={() => setIsPostModalOpen(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
             <input
               placeholder="제목"
               value={title}
@@ -155,8 +155,8 @@ export default function Community() {
 
       {/* 댓글 모달 */}
       {isCommentModalOpen && currentPost && (
-        <div className="modal-backdrop">
-          <div className="modal coment-modal">
+        <div className="modal-backdrop" onClick={() => setIsCommentModalOpen(false)}>
+          <div className="modal coment-modal" onClick={(e) => e.stopPropagation()}>
             <h3>댓글 - {currentPost.title}</h3>
             <div className="comments-list">
               {currentPost.comments.map(c => (
