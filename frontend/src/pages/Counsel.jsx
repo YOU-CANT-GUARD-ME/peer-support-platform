@@ -51,12 +51,14 @@ export default function Counsel() {
             </div>
 
             <div className="ako-info-box">
-                <h3>Ako</h3>
-                <p></p>
+                <div className="ako-info">
+                    <h3>Ako</h3>
+                    <p>학교 내 상담 동아리 Ako입니다.</p>
+                </div>
+                <button className="ako-btn" onClick={() => setIsOpen(true)}>
+                    상담 신청하기
+                </button>
             </div>
-            <button className="ako-btn" onClick={() => setIsOpen(true)}>
-                상담 신청하기
-            </button>
 
             {/* 상담 신청 모달 */}
             {isOpen && (
