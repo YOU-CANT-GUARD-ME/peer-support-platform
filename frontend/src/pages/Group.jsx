@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "../css/Group.css";
 import { motion } from "framer-motion";
 
-// 그룹 생성 모달 컴포넌트
+// 그룹 생성 모달
 function GroupModal({ setIsModalOpen, onGroupCreated }) {
   const [name, setName] = useState("");
   const [limit, setLimit] = useState("");
@@ -22,6 +22,7 @@ function GroupModal({ setIsModalOpen, onGroupCreated }) {
     };
 
     onGroupCreated(newGroup);
+    setIsModalOpen(false);
     setName("");
     setLimit("");
     setCategory("");
@@ -32,7 +33,6 @@ function GroupModal({ setIsModalOpen, onGroupCreated }) {
     <div className="modal-backdrop" onClick={() => setIsModalOpen(false)}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h3>그룹 생성</h3>
-
         <input
           type="text"
           placeholder="그룹 이름"
@@ -56,7 +56,6 @@ function GroupModal({ setIsModalOpen, onGroupCreated }) {
           value={desc}
           onChange={(e) => setDesc(e.target.value)}
         />
-
         <div className="modal-buttons">
           <button onClick={() => setIsModalOpen(false)}>취소</button>
           <button onClick={handleCreate}>생성</button>
@@ -66,16 +65,11 @@ function GroupModal({ setIsModalOpen, onGroupCreated }) {
   );
 }
 
-// 새 그룹 보기 컴포넌트
-function NewGroups({ groups, setGroups, setIsModalOpen, setActiveTab }) {
-  const handleGroupCreated = (newGroup) => {
-    setGroups([newGroup, ...groups]);
-    setIsModalOpen(false);
-    setActiveTab("new"); // 생성 후 새 그룹 보기로 이동
-  };
-
+// 새 그룹 보기
+function NewGroups({ groups, setGroups, setActiveTab, setIsModalOpen }) {
   return (
     <div className="group-list">
+      {groups.length === 0 && <p>새로운 그룹이 없습니다.</p>}
       {groups.map((g) => (
         <div className="group-card" key={g.id}>
           <h2>{g.name}</h2>
@@ -87,15 +81,11 @@ function NewGroups({ groups, setGroups, setIsModalOpen, setActiveTab }) {
           <button className="join-btn">가입</button>
         </div>
       ))}
-      {/** 그룹 생성 모달 */}
-      {setIsModalOpen && (
-        <GroupModal setIsModalOpen={setIsModalOpen} onGroupCreated={handleGroupCreated} />
-      )}
     </div>
   );
 }
 
-// 마이 그룹 컴포넌트
+// 마이 그룹 보기
 function MyGroups({ myGroups }) {
   return (
     <div className="group-list">
@@ -122,8 +112,14 @@ function MyGroups({ myGroups }) {
 export default function Group() {
   const [groups, setGroups] = useState([]);
   const [myGroups, setMyGroups] = useState([]);
-  const [activeTab, setActiveTab] = useState("new"); // 'new' or 'my'
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("new");
+  const [isModalOpen, setIsModalOpen] = useState(false); // 초기 false
+
+  const handleGroupCreated = (newGroup) => {
+    setGroups([newGroup, ...groups]);
+    setActiveTab("new"); // 생성 후 새 그룹 보기
+    setIsModalOpen(false);
+  };
 
   return (
     <div className="groups-page">
@@ -145,7 +141,7 @@ export default function Group() {
         </motion.p>
       </div>
 
-      {/* 그룹 생성 버튼 */}
+      {/* 그룹 생성 플로팅 버튼 */}
       <div className="create-btn" onClick={() => setIsModalOpen(true)}>+</div>
 
       {/* 탭 버튼 */}
@@ -164,28 +160,25 @@ export default function Group() {
         </button>
       </div>
 
-      {/* 탭 컨텐츠 */}
+      {/* 탭 내용 */}
       <div className="tab-content">
         {activeTab === "new" ? (
           <NewGroups
             groups={groups}
             setGroups={setGroups}
-            setIsModalOpen={setIsModalOpen}
             setActiveTab={setActiveTab}
+            setIsModalOpen={setIsModalOpen}
           />
         ) : (
           <MyGroups myGroups={myGroups} />
         )}
       </div>
 
-      {/* 그룹 생성 모달 (새 그룹 보기 / 마이 그룹 모두 클릭 가능) */}
+      {/* 모달 */}
       {isModalOpen && (
         <GroupModal
           setIsModalOpen={setIsModalOpen}
-          onGroupCreated={(newGroup) => {
-            setGroups([newGroup, ...groups]);
-            setActiveTab("new"); // 생성 후 새 그룹 보기
-          }}
+          onGroupCreated={handleGroupCreated}
         />
       )}
     </div>

@@ -1,119 +1,231 @@
-/* Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Arial', sans-serif;
-}
-
+/* 공통 스타일 */
 .landing-page {
-  display: flex;
-  flex-direction: column;
+  width: 100%;
   min-height: 100vh;
+  background: #f8f9fb;
+  color: #222;
+  font-family: "Pretendard", sans-serif;
+  /* padding-bottom: 100px; */
 }
 
+/* --------------------------------------- */
 /* Hero Section */
+/* --------------------------------------- */
 .hero {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-  height: 80vh;
-  color: white;
-  background: #0077cc;
   text-align: center;
-  padding: 0 20px;
+  padding: 130px 20px 160px;
+  background: linear-gradient(135deg, #6ea8ff, #9bc8ff, #e0efff);
+  color: white;
+  border-radius: 0 0 30px 30px;
 }
 
 .hero-title {
   font-size: 3rem;
-  font-weight: bold;
+  font-weight: 700;
+  margin-bottom: 15px;
 }
 
 .hero-subtitle {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
+  opacity: 0.95;
 }
 
 .hero-buttons {
-  display: flex;
-  gap: 1rem;
+  margin-top: 30px;
 }
 
 .primary-btn {
-  padding: 12px 30px;
-  border-radius: 10px;
+  padding: 14px 35px;
+  background: #ffffff;
+  color: #1f6fff;
+  font-weight: 600;
+  border-radius: 30px;
   border: none;
-  background-color: white;
-  color: #2575fc;
-  font-weight: bold;
   cursor: pointer;
   transition: 0.3s;
+  font-size: 1.05rem;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
 }
 
 .primary-btn:hover {
-  background-color: #f0f0f0;
-  scale: 1.05;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(255, 255, 255, 0.4);
 }
 
-.secondary-btn {
-  padding: 12px 30px;
-  border-radius: 10px;
-  border: 2px solid white;
-  background-color: transparent;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
+/* --------------------------------------- */
+/* Introduce Section */
+/* --------------------------------------- */
+.introduce {
+  padding: 80px 20px;
+  max-width: 900px;
+  margin: auto;
 }
 
-.secondary-btn:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-/* Features Section */
-.features {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  flex-wrap: wrap;
-  padding: 60px 20px;
-  background-color: #f4f4f4;
-}
-
-.feature-card {
-  background-color: white;
-  padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  min-width: 220px;
+.introduce .title {
+  font-size: 2rem;
+  font-weight: 700;
   text-align: center;
-  font-weight: bold;
-  font-size: 1.2rem;
-  cursor: pointer;
-  transition: 0.3s;
+    color: #0077cc;
+  margin-bottom: 40px;
 }
 
-.feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
-
-/* Footer */
-.footer {
+.intro-box-container {
   display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.intro-box {
+  width: 500px;
+  height: 450px;
+  background: white;
+  padding: 40px;
+  border-radius: 18px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
+  margin-bottom: 35px;
+  animation: fadeUp 1s ease forwards;
+  opacity: 0;
+}
+
+@keyframes fadeUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.intro-box h3 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.intro-box p,
+.intro-box ul {
+  line-height: 1.6;
+  color: #444;
+}
+
+.intro-box ul li {
+  margin-bottom: 5px;
+  list-style: circle;
+}
+
+/* --------------------------------------- */
+/* 기능 섹션 */
+/* --------------------------------------- */
+.functions {
+  background-color: #eaf2ff;
+  height: 600px;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
-  gap: 20px;
+  align-items: center;
+}
+
+.grid-box {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px;
+  max-width: 900px;
+  padding: 0 20px;
+}
+
+.functions .title {
+    font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 40px;
+    color: #0077cc;
+}
+
+.function {
+  background: #ffffff;
   padding: 25px;
-  background-color: black;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  transition: 0.3s ease;
+  animation: fadeUp 1s ease forwards;
+  opacity: 0;
 }
 
-.footer a {
-  color: white;
-  text-decoration: none;
+.function:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.08);
+}
+
+
+.function h3 {
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+}
+
+.function p {
+  color: #555;
+}
+
+/* --------------------------------------- */
+/* Why Section */
+/* --------------------------------------- */
+.why {
+  text-align: center;
+  padding: 70px 20px 40px;
+}
+
+.why h3 {
+  font-size: 2rem;
+  margin-bottom: 25px;
+    color: #0077cc;
+}
+
+.why-box {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  max-width: 800px;
+  margin: auto;
+  gap: 20px;
+}
+
+.w-box {
+  background: white;
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 7px 18px rgba(0, 0, 0, 0.06);
+  animation: fadeUp 1s ease forwards;
+  opacity: 0;
+}
+
+.w-box p {
+  font-size: 1.05rem;
   font-weight: 500;
+  color: #333;
 }
 
-.footer a:hover {
-  color: #6a11cb;
+/* --------------------------------------- */
+/* Footer */
+/* --------------------------------------- */
+.footer {
+  margin-top: 80px;
+  padding: 40px 20px;
+  text-align: center;
+  background: #eaf2ff;
+  color: #333;
+  border-radius: 20px 20px 0 0;
 }
+
+.footer p {
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.ft-box {
+font-weight: 500;
+  margin: 15px 0;
+  color: #000000;
+}
+
