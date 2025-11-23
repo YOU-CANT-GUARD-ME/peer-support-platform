@@ -93,7 +93,8 @@ export default function Diary() {
             {/* 작성 모달 */}
             {isModalOpen && (
                 <div className="modal-backdrop" onClick={() => setIsModalOpen(false)}>
-                    <div className="modal">
+                    <div className="modal"
+                    onClick={(e) => e.stopPropagation()}>
                         <h3>새 일기 작성</h3>
 
                         <div className="emotion-selector">
@@ -141,14 +142,17 @@ export default function Diary() {
                     {currentEntry && (
                         <div
                             className="modal-backdrop themed"
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={() => setIsModalOpen(false)}
                             >
                                 
                             
                             <div className="modal"
                             style={{
                                 backgroundImage: `url(${currentEntry.theme.src})`
-                            }}>
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            >
+                                
                                 <h3>{currentEntry.emotion} - {currentEntry.dateTime}</h3>
                                 <p>{currentEntry.content}</p>
 
