@@ -60,7 +60,8 @@
 .hero {
   text-align: center;
   padding: 130px 20px 160px;
-  background: linear-gradient(135deg, #0077cc, #e0efff);
+  /* background: linear-gradient(135deg, #0077cc, #e0efff); */
+  background-color: #0077cc;
   color: white;
 }
 
@@ -82,8 +83,8 @@
 
 .primary-btn {
   padding: 14px 35px;
-  background: #ffffff7d;
-  color: #1f6fff;
+  background: #ffffff5a;
+  color: #ffffff;
   font-weight: 500;
   border-radius: 30px;
   border: none;
