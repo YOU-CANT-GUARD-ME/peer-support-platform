@@ -1,0 +1,296 @@
+/* 기본 설정 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Pretendard", sans-serif;
+}
+
+body {
+  background: #f5f6fa;
+}
+
+/* 전체 페이지 */
+.community-page {
+  padding: 100px 0 150px;
+  display: flex;
+  gap: 100px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.welcome-text {
+  font-size: 40px;
+  color: #0077cc;
+}
+
+/* 게시글 리스트 */
+.posts {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+/* 개별 게시글 카드 */
+.post {
+  width: 800px;
+  padding: 24px;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid #e3e5e9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: 0.2s ease;
+}
+
+.post:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* 글 상단 프로필 */
+.post-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  color: #555;
+  font-size: 14px;
+}
+
+.profile-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+}
+
+/* 제목 */
+.post h2 {
+  font-size: 21px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #222;
+}
+
+/* 내용 */
+.post p {
+  color: #444;
+  line-height: 1.6;
+}
+
+/* 글 하단 버튼 */
+.post-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.post-actions button {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #d0d4da;
+  background: #f1f3f5;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.post-actions button:hover {
+  background: #e2e6ea;
+}
+
+.post-actions button:nth-child(3) {
+  background: #0077cc;
+  color: white;
+  border: none;
+}
+
+.post-actions button:nth-child(3):hover {
+  background: #0062a5;
+}
+
+/* 글쓰기 플로팅 버튼 */
+.post-btn {
+  position: fixed;
+  right: 25px;
+  bottom: 25px;
+  background: #0077cc;
+  font-size: 40px;
+  color: white;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.post-btn:hover {
+  transform: scale(1.08);
+}
+
+/* 모달 배경 */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.2s ease;
+}
+
+/* 모달 */
+.modal {
+  width: 430px;
+  max-height: 85vh;
+  background: #fff;
+  border-radius: 18px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  animation: popIn 0.25s ease;
+}
+
+/* 제목 input + 내용 textarea */
+.modal input,
+.modal textarea {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #dcdfe6;
+  font-size: 15px;
+  outline: none;
+  transition: 0.2s;
+}
+
+.modal input:focus,
+.modal textarea:focus {
+  border-color: #0077cc;
+  box-shadow: 0 0 0 3px rgba(0, 119, 204, 0.15);
+}
+
+.modal textarea {
+  height: 220px;
+  resize: none;
+}
+
+/* 모달 버튼 */
+.modal-buttons {
+  margin-top: auto;
+  display: flex;
+  gap: 10px;
+}
+
+.modal-buttons button {
+  padding: 12px 0;
+  flex: 1;
+  border-radius: 10px;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.modal-buttons button:first-child {
+  background: #e7e9ed;
+}
+
+.modal-buttons button:first-child:hover {
+  background: #d9dbe0;
+}
+
+.modal-buttons button:last-child {
+  background: #0077cc;
+  color: white;
+}
+
+.modal-buttons button:last-child:hover {
+  background: #0062a5;
+}
+
+/* 댓글 모달 내부 */
+
+.coment-modal {
+  width: 60%;
+  min-width: 560px;
+  padding: 20px 24px;
+}
+
+.comments-list {
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 5px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 7.5px;
+}
+
+.comment {
+  background: #f7f8fa;
+  padding: 12px 10px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.comment span {
+  color: #777;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+/* 댓글 입력 폼 */
+.comment-form {
+  display: flex;
+  gap: 10px;
+}
+
+.comment-form input {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #d3d5da;
+}
+
+.comment-form button {
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: none;
+  background: #0077cc;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.comment-form button:hover {
+  background: #0062a5;
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

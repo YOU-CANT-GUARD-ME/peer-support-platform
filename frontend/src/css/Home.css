@@ -1,0 +1,277 @@
+/* 공통 스타일 */
+.landing-page {
+  width: 100%;
+  min-height: 100vh;
+  background: #f8f9fb;
+  color: #222;
+  font-family: "Pretendard", sans-serif;
+  /* padding-bottom: 100px; */
+}
+
+/* glass style */
+.glass-card {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 60px 30px rgba(255, 255, 255, 3);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.8),
+    transparent
+  );
+}
+
+.glass-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.8),
+    transparent,
+    rgba(255, 255, 255, 0.3)
+  );
+}
+
+/* --------------------------------------- */
+/* Hero Section */
+/* --------------------------------------- */
+.hero {
+  text-align: center;
+  padding: 130px 20px 160px;
+  background: linear-gradient(135deg, #0077cc, #e0efff);
+  color: white;
+}
+
+.hero-title {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.hero-subtitle {
+  font-size: 1.2rem;
+  opacity: 0.95;
+}
+
+.hero-buttons {
+  border: 0;
+  margin-top: 30px;
+}
+
+.primary-btn {
+  padding: 14px 35px;
+  background: #ffffff7d;
+  color: #1f6fff;
+  font-weight: 500;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 1.05rem;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
+
+.primary-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(255, 255, 255, 0.4);
+}
+
+/* --------------------------------------- */
+/* Introduce Section */
+/* --------------------------------------- */
+.introduce {
+  padding: 80px 20px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.introduce .title {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+    color: #0077cc;
+  margin-bottom: 40px;
+}
+
+.intro-box-container {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.intro-box {
+  width: 500px;
+  height: 400px;
+  background: rgba(255, 255, 255, 0.258);
+  padding: 40px;
+  border-radius: 18px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
+  margin-bottom: 35px;
+  animation: fadeUp 1s ease forwards;
+  opacity: 0;
+}
+
+@keyframes fadeUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.intro-box h3 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.intro-box p,
+.intro-box ul {
+  line-height: 1.6;
+  color: #444;
+}
+
+.intro-box ul li {
+  margin-bottom: 5px;
+  list-style: circle;
+}
+
+/* --------------------------------------- */
+/* 기능 섹션 */
+/* --------------------------------------- */
+.functions {
+  background-color: #eaf2ff;
+  height: 600px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.grid-box {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px;
+  max-width: 900px;
+  padding: 0 20px;
+}
+
+.functions .title {
+    font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 40px;
+    color: #0077cc;
+}
+
+.function {
+  background: #ffffff63;
+  padding: 25px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  transition: 0.3s ease;
+  animation: fadeUp 1s ease forwards;
+  opacity: 0;
+}
+
+.function:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.08);
+}
+
+
+.function h3 {
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+}
+
+.function p {
+  color: #555;
+}
+
+/* --------------------------------------- */
+/* Why Section */
+/* --------------------------------------- */
+.why {
+  text-align: center;
+  padding: 70px 20px 40px;
+}
+
+.why h3 {
+  font-size: 2rem;
+  margin-bottom: 25px;
+    color: #0077cc;
+}
+
+.why-box {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  max-width: 800px;
+  margin: auto;
+  gap: 20px;
+}
+
+.w-box {
+  background: white;
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 7px 18px rgba(0, 0, 0, 0.06);
+  animation: fadeUp 1s ease forwards;
+  opacity: 0;
+}
+
+.w-box p {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: #333;
+}
+
+/* --------------------------------------- */
+/* Footer */
+/* --------------------------------------- */
+.footer {
+  margin-top: 80px;
+  padding: 40px 20px;
+  text-align: center;
+  background: #eaf2ff;
+  color: #333;
+  border-radius: 20px 20px 0 0;
+}
+
+.footer p {
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.ft-box {
+font-weight: 500;
+  margin: 15px 0;
+  color: #000000;
+}
+

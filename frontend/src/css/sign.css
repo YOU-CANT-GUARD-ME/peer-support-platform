@@ -1,0 +1,100 @@
+.signup-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 70px);
+    background: #f7f8fa;
+    padding: 20px;
+}
+
+.have-account {
+    font-size: 15px;
+    color: #aaaaaa;
+    text-decoration: none;
+}
+
+.sign-container {
+    width: 100vw;
+    height: calc(100vh - 70px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.signup-box {
+    background: white;
+    padding: 32px;
+    border-radius: 18px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.signup-title {
+    font-size: 24px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+}
+
+.input-group label {
+    font-size: 14px;
+    color: #444;
+}
+
+.input-group input {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: 0.2s;
+}
+
+.input-group input:focus {
+    border-color: #0077cc;
+    box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.15);
+    outline: none;
+}
+
+.signup-btn {
+    background: #0077cc;
+    color: white;
+    padding: 14px;
+    font-size: 16px;
+    width: 100%;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.signup-btn:hover {
+    background: #0073c5;
+}
+
+.back-btn {
+    background: #e9ecef;
+    padding: 12px;
+    font-size: 15px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.back-btn:hover {
+    background: #dee2e6;
+}
