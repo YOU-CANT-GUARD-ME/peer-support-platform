@@ -93,19 +93,17 @@ body {
   font-size: 14px;
   transition: 0.2s;
 }
+.post-actions button:nth-child(1) {
+  background-color: #0077cc;
+  color: white;
+}
+
+.post-actions button:nth-child(1):hover {
+  background-color: #0062a5;
+}
 
 .post-actions button:hover {
   background: #e2e6ea;
-}
-
-.post-actions button:nth-child(3) {
-  background: #0077cc;
-  color: white;
-  border: none;
-}
-
-.post-actions button:nth-child(3):hover {
-  background: #0062a5;
 }
 
 /* 글쓰기 플로팅 버튼 */

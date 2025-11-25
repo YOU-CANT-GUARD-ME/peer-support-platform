@@ -71,6 +71,30 @@ export default function Community() {
     setIsCommentModalOpen(true);
   };
 
+  // like post
+  const handleMeToo = async (postId) => {
+  const res = await fetch(`${API_BASE_URL}/api/posts/${postId}/me-too`, {
+    method: "POST"
+  });
+
+  const updatedPost = await res.json();
+
+  setPosts(posts.map(p => p._id === updatedPost._id ? updatedPost : p));
+};
+
+// 서버에 추가해야한다는 코드
+/* router.post("/posts/:id/me-too", async (req, res) => {
+  const post = await Post.findById(req.params.id);
+  if (!post) return res.status(404).json({ error: "Post not found" });
+
+  post.meTooCount = (post.meTooCount || 0) + 1;
+  await post.save();
+
+  res.json(post);
+}); */
+
+
+
   const currentPost = posts.find(p => p._id === currentPostId);
 
   return (
@@ -96,10 +120,17 @@ export default function Community() {
                 <img src={ProfileIcon} alt="profile" className="profile-icon" />
                 <strong>anonymous</strong> - <span>{formatDate(post.createdAt)}</span>
               </div>
+
               <h2>{post.title}</h2>
               <p>{post.content}</p>
 
               <div className="post-actions">
+
+                {/* ✅ Me Too 버튼 추가 */}
+                <button onClick={() => handleMeToo(post._id)}>
+                  Me Too ({post.meTooCount || 0})
+                </button>
+
                 <button onClick={() => handleDeletePost(post._id)}>삭제</button>
                 <button onClick={() => openCommentModal(post._id)}>
                   댓글 ({post.comments.length})
@@ -108,6 +139,7 @@ export default function Community() {
             </div>
           ))}
         </div>
+
       )}
 
       {isPostModalOpen && (
