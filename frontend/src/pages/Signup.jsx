@@ -1,21 +1,51 @@
 import React, { useState } from "react";
-import '../css/sign.css'
+import "../css/sign.css";
 import { Link } from "react-router-dom";
+import { API_BASE_URL } from "../api";
 
 export default function SignUp() {
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirm: "",
+  });
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (form.password !== form.confirm) {
       alert("비밀번호가 일치하지 않습니다.");
       return;
     }
-    alert("회원가입 완료!");
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          password: form.password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message || "회원가입 실패");
+        return;
+      }
+
+      alert("회원가입 완료!");
+    } catch (err) {
+      console.error(err);
+      alert("서버 오류가 발생했습니다.");
+    }
   };
 
   return (
@@ -67,8 +97,12 @@ export default function SignUp() {
           />
         </div>
 
-        <button className="signup-btn" type="submit">회원가입</button>
-        <Link className='have-account' to='/signIn'>이미 계정이 있으신가요?</Link>
+        <button className="signup-btn" type="submit">
+          회원가입
+        </button>
+        <Link className="have-account" to="/signIn">
+          이미 계정이 있으신가요?
+        </Link>
       </form>
     </div>
   );
