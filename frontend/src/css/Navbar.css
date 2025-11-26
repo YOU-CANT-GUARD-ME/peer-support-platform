@@ -39,10 +39,12 @@
 }
 
 /* 개별 메뉴 */
-.navbar ul * {
+.navbar ul li {
   text-decoration: none;
   padding: 10px 18px;
   border-radius: 10px;
+  border: 0;
+  background-color: unset;
 
   font-size: 15px;
   font-weight: 500;
@@ -53,8 +55,21 @@
 }
 
 /* 메뉴 hover */
-.navbar ul *:hover {
+.navbar ul li:hover {
   color: rgba(72, 149, 239, 0.85);
   box-shadow: 0 4px 12px rgba(72, 149, 239, 0.15);
   transform: translateY(-2px);
+}
+
+.user-info {
+  display: flex;
+  gap: 1.2rem;
+  align-items: center;  
+  color: #333;
+}
+
+.logout-btn {
+  border: 0;
+  background-color: unset;
+  padding: 7.5px;
 }
