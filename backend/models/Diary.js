@@ -4,11 +4,7 @@ const DiarySchema = new mongoose.Schema(
     {
         emotion: { type: String, required: true },
         content: { type: String, required: true },
-        theme: {
-            id: String,
-            src: String,
-            label: String,
-        },
+        themeId: { type: String, required: true },
     },
     { timestamps: true }
 );

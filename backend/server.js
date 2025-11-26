@@ -135,10 +135,20 @@ app.get("/api/diary", async (req, res) => {
 });
 
 app.post("/api/diary", async (req, res) => {
-  const { emotion, content, theme } = req.body;
-  const entry = new Diary({ emotion, content, theme });
-  await entry.save();
-  res.json(entry);
+  try {
+    const { emotion, content, themeId } = req.body;
+
+    const entry = new Diary({
+      emotion,
+      content,
+      themeId,
+    });
+
+    await entry.save();
+    res.json(entry);
+  } catch (err) {
+    res.status(500).json({ message: "Diary save error", error: err.message });
+  }
 });
 
 app.delete("/api/diary/:id", async (req, res) => {
