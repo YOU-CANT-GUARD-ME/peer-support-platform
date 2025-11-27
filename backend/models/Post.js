@@ -4,6 +4,7 @@ const PostSchema = new mongoose.Schema(
   {
     title: String,
     content: String,
+
     comments: [
       {
         username: String,
@@ -15,7 +16,20 @@ const PostSchema = new mongoose.Schema(
           }
         ]
       }
-    ]
+    ],
+
+    // How many "Me Too" clicks
+    meTooCount: {
+      type: Number,
+      default: 0,
+    },
+
+    // The actual users who clicked Me Too
+    meTooUsers: [
+      {
+        type: String, // store a userId or username
+      }
+    ],
   },
   { timestamps: true }
 );

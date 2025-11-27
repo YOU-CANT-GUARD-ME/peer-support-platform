@@ -1,23 +1,27 @@
 import React, { useState, useEffect } from "react";
 import '../css/Community.css';
 import ProfileIcon from '../assets/profile.jpg';
-import { motion } from "framer-motion"
+import { motion } from "framer-motion";
 import { API_BASE_URL } from "../api";
 
 export default function Community() {
   const [posts, setPosts] = useState([]);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
-  const [editingPost, setEditingPost] = useState(null);
   const [currentPostId, setCurrentPostId] = useState(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+
+  // TEMP current user — replace after login is connected
+  const currentUser = { _id: "temp-user-id" };
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString("ko-KR");
   };
 
-  // Load posts from backend
+  // -----------------------------------------
+  // Load Posts
+  // -----------------------------------------
   useEffect(() => {
     const fetchPosts = async () => {
       const res = await fetch(`${API_BASE_URL}/api/posts`);
@@ -27,7 +31,9 @@ export default function Community() {
     fetchPosts();
   }, []);
 
-  // Create new post (backend)
+  // -----------------------------------------
+  // Create New Post
+  // -----------------------------------------
   const handleSubmitPost = async () => {
     if (!title.trim() || !content.trim()) return;
 
@@ -42,17 +48,20 @@ export default function Community() {
 
     setTitle("");
     setContent("");
-    setEditingPost(null);
     setIsPostModalOpen(false);
   };
 
-  // Delete post
+  // -----------------------------------------
+  // Delete Post
+  // -----------------------------------------
   const handleDeletePost = async (id) => {
     await fetch(`${API_BASE_URL}/api/posts/${id}`, { method: "DELETE" });
     setPosts(posts.filter(p => p._id !== id));
   };
 
-  // Add comment
+  // -----------------------------------------
+  // Add Comment
+  // -----------------------------------------
   const handleAddComment = async (postId, commentText) => {
     if (!commentText.trim()) return;
 
@@ -66,34 +75,36 @@ export default function Community() {
     setPosts(posts.map(p => p._id === updatedPost._id ? updatedPost : p));
   };
 
+  // -----------------------------------------
+  // Me Too (only once per user)
+  // -----------------------------------------
+  const handleMeToo = async (postId) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/posts/${postId}/me-too`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: currentUser._id })
+      });
+
+      const updated = await res.json();
+
+      if (res.status === 400) {
+        alert(updated.message);
+        return;
+      }
+
+      setPosts(prev =>
+        prev.map(p => (p._id === updated._id ? updated : p))
+      );
+    } catch (err) {
+      console.log("Me Too error:", err);
+    }
+  };
+
   const openCommentModal = (postId) => {
     setCurrentPostId(postId);
     setIsCommentModalOpen(true);
   };
-
-  // like post
-  const handleMeToo = async (postId) => {
-  const res = await fetch(`${API_BASE_URL}/api/posts/${postId}/me-too`, {
-    method: "POST"
-  });
-
-  const updatedPost = await res.json();
-
-  setPosts(posts.map(p => p._id === updatedPost._id ? updatedPost : p));
-};
-
-// 서버에 추가해야한다는 코드
-/* router.post("/posts/:id/me-too", async (req, res) => {
-  const post = await Post.findById(req.params.id);
-  if (!post) return res.status(404).json({ error: "Post not found" });
-
-  post.meTooCount = (post.meTooCount || 0) + 1;
-  await post.save();
-
-  res.json(post);
-}); */
-
-
 
   const currentPost = posts.find(p => p._id === currentPostId);
 
@@ -114,34 +125,47 @@ export default function Community() {
 
       {posts.length > 0 && (
         <div className="posts">
-          {posts.map(post => (
-            <div key={post._id} className="post">
-              <div className="post-header">
-                <img src={ProfileIcon} alt="profile" className="profile-icon" />
-                <strong>anonymous</strong> - <span>{formatDate(post.createdAt)}</span>
+          {posts.map(post => {
+            const hasMeToo =
+              post.meTooUsers &&
+              post.meTooUsers.includes(currentUser._id);
+
+            return (
+              <div key={post._id} className="post">
+                <div className="post-header">
+                  <img src={ProfileIcon} alt="profile" className="profile-icon" />
+                  <strong>anonymous</strong> - <span>{formatDate(post.createdAt)}</span>
+                </div>
+
+                <h2>{post.title}</h2>
+                <p>{post.content}</p>
+
+                <div className="post-actions">
+
+                  {/* Me Too Button */}
+                  <button
+                    disabled={hasMeToo}
+                    onClick={() => handleMeToo(post._id)}
+                  >
+                    {hasMeToo
+                      ? "Already Me Too"
+                      : `Me Too (${post.meTooCount || 0})`}
+                  </button>
+
+                  <button onClick={() => handleDeletePost(post._id)}>삭제</button>
+                  <button onClick={() => openCommentModal(post._id)}>
+                    댓글 ({post.comments.length})
+                  </button>
+                </div>
               </div>
-
-              <h2>{post.title}</h2>
-              <p>{post.content}</p>
-
-              <div className="post-actions">
-
-                {/* ✅ Me Too 버튼 추가 */}
-                <button onClick={() => handleMeToo(post._id)}>
-                  Me Too ({post.meTooCount || 0})
-                </button>
-
-                <button onClick={() => handleDeletePost(post._id)}>삭제</button>
-                <button onClick={() => openCommentModal(post._id)}>
-                  댓글 ({post.comments.length})
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
-
       )}
 
+      {/* ----------------------------- */}
+      {/* Create Post Modal */}
+      {/* ----------------------------- */}
       {isPostModalOpen && (
         <div className="modal-backdrop" onClick={() => setIsPostModalOpen(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -156,6 +180,7 @@ export default function Community() {
               value={content}
               onChange={(e) => setContent(e.target.value)}
             />
+
             <div className="modal-buttons">
               <button onClick={() => setIsPostModalOpen(false)}>취소</button>
               <button onClick={handleSubmitPost}>확인</button>
@@ -164,6 +189,9 @@ export default function Community() {
         </div>
       )}
 
+      {/* ----------------------------- */}
+      {/* Comment Modal */}
+      {/* ----------------------------- */}
       {isCommentModalOpen && currentPost && (
         <div className="modal-backdrop" onClick={() => setIsCommentModalOpen(false)}>
           <div className="modal coment-modal" onClick={(e) => e.stopPropagation()}>
@@ -188,6 +216,9 @@ export default function Community() {
   );
 }
 
+// -----------------------------------------
+// Comment Input Component
+// -----------------------------------------
 function CommentInput({ postId, onAddComment }) {
   const [commentText, setCommentText] = useState("");
 
