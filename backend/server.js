@@ -2,22 +2,25 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+import http from "http";
+import { Server } from "socket.io";
+
 import Post from "./models/Post.js";
 import SupportGroup from "./models/supportGroup.js";
-import authRoutes from "./auth.js";
 import Diary from "./models/Diary.js";
+import authRoutes from "./auth.js";
 
 dotenv.config();
 const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 app.use("/api/auth", authRoutes);
-
-// --- Root route ---
-app.get("/", (req, res) => {
-  res.send("✅ Peer Support Backend is running!");
-});
 
 // --- MongoDB Connection ---
 mongoose
@@ -69,7 +72,7 @@ app.delete("/api/groups/:id", async (req, res) => {
 });
 
 app.get("/api/groups/my", async (req, res) => {
-  const groups = await SupportGroup.find(); // or filter by user later
+  const groups = await SupportGroup.find(); // Filter by user later if needed
   res.json(groups);
 });
 
@@ -98,13 +101,10 @@ app.delete("/api/diary/:id", async (req, res) => {
 // ------------------------------
 // WebRTC / Socket.IO
 // ------------------------------
-import http from "http";
-import { Server } from "socket.io";
-
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: "*", // You can replace with your frontend URL in production
     methods: ["GET", "POST"],
   },
 });
@@ -153,6 +153,14 @@ io.on("connection", (socket) => {
       }
     });
   });
+});
+
+// -----------------------------
+// Serve React frontend (after API routes)
+app.use(express.static(path.join(__dirname, "../frontend/build")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/build", "index.html"));
 });
 
 // -----------------------------
