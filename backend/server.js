@@ -2,17 +2,17 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+import Post from "./models/Post.js";
+import SupportGroup from "./models/supportGroup.js";
+import authRoutes from "./auth.js";
+import Diary from "./models/Diary.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import http from "http";
 import { Server } from "socket.io";
 
-import Post from "./models/Post.js";
-import SupportGroup from "./models/supportGroup.js";
-import Diary from "./models/Diary.js";
-import authRoutes from "./auth.js";
-
 dotenv.config();
+
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,7 +31,9 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log(err));
 
-// --- Posts API ---
+// --- API Routes ---
+
+// Posts
 app.get("/api/posts", async (req, res) => {
   const posts = await Post.find().sort({ createdAt: -1 });
   res.json(posts);
@@ -44,7 +46,7 @@ app.post("/api/posts", async (req, res) => {
   res.json(newPost);
 });
 
-// --- Support Groups API ---
+// Support Groups
 app.get("/api/groups", async (req, res) => {
   const groups = await SupportGroup.find().sort({ createdAt: -1 });
   res.json(groups);
@@ -72,11 +74,11 @@ app.delete("/api/groups/:id", async (req, res) => {
 });
 
 app.get("/api/groups/my", async (req, res) => {
-  const groups = await SupportGroup.find(); // Filter by user later if needed
+  const groups = await SupportGroup.find();
   res.json(groups);
 });
 
-// --- Diary API ---
+// Diary
 app.get("/api/diary", async (req, res) => {
   const entries = await Diary.find().sort({ createdAt: -1 });
   res.json(entries);
@@ -99,17 +101,14 @@ app.delete("/api/diary/:id", async (req, res) => {
 });
 
 // ------------------------------
-// WebRTC / Socket.IO
+// Socket.IO for voice chat
 // ------------------------------
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: {
-    origin: "*", // You can replace with your frontend URL in production
-    methods: ["GET", "POST"],
-  },
+  cors: { origin: "*", methods: ["GET", "POST"] },
 });
 
-const rooms = {}; // roomId -> Set(socket.id)
+const rooms = {};
 
 io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
@@ -132,17 +131,11 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("offer", ({ to, offer }) => {
-    io.to(to).emit("offer", { from: socket.id, offer });
-  });
-
-  socket.on("answer", ({ to, answer }) => {
-    io.to(to).emit("answer", { from: socket.id, answer });
-  });
-
-  socket.on("ice-candidate", ({ to, candidate }) => {
-    io.to(to).emit("ice-candidate", { from: socket.id, candidate });
-  });
+  socket.on("offer", ({ to, offer }) => io.to(to).emit("offer", { from: socket.id, offer }));
+  socket.on("answer", ({ to, answer }) => io.to(to).emit("answer", { from: socket.id, answer }));
+  socket.on("ice-candidate", ({ to, candidate }) =>
+    io.to(to).emit("ice-candidate", { from: socket.id, candidate })
+  );
 
   socket.on("disconnecting", () => {
     const socketRooms = Array.from(socket.rooms).filter((r) => r !== socket.id);
@@ -155,16 +148,17 @@ io.on("connection", (socket) => {
   });
 });
 
-// -----------------------------
-// Serve React frontend (after API routes)
-app.use(express.static(path.join(__dirname, "../frontend/build")));
+// ------------------------------
+// Serve Vite frontend
+// ------------------------------
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/build", "index.html"));
+  res.sendFile(path.join(__dirname, "../frontend/dist", "index.html"));
 });
 
-// -----------------------------
+// ------------------------------
 // Start server
-// -----------------------------
+// ------------------------------
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
