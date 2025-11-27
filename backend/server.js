@@ -68,6 +68,12 @@ app.delete("/api/groups/:id", async (req, res) => {
   }
 });
 
+app.get("/api/groups/my", async (req, res) => {
+  const groups = await SupportGroup.find(); // or filter by user later
+  res.json(groups);
+});
+
+
 // --- Diary API ---
 app.get("/api/diary", async (req, res) => {
   const entries = await Diary.find().sort({ createdAt: -1 });
