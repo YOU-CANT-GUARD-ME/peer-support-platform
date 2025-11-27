@@ -1,177 +1,191 @@
 import React, { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
-import ProfileIcon from '../assets/profile.jpg';
 
-const socket = io("http://localhost:3001"); // 서버 주소
+const socket = io("[http://localhost:3001](http://localhost:3001)"); // 서버 주소
 
 export default function GroupDetailPage() {
-  /* -----------------------------
-      음성채팅 관련 상태
-  ------------------------------ */
-  const [joinedVoice, setJoinedVoice] = useState(false);
-  const localAudioRef = useRef();
-  const localStreamRef = useRef();
-  const peersRef = useRef({}); // peerId -> { pc }
+/* -----------------------------
+음성채팅 관련 상태
+------------------------------ */
+const [joinedVoice, setJoinedVoice] = useState(false);
+const [participants, setParticipants] = useState([]);
+const localAudioRef = useRef();
+const localStreamRef = useRef();
+const peersRef = useRef({}); // peerId -> { pc }
 
-  const voiceRoomId = "group-" + "아프지말고햄보카자";
+const voiceRoomId = "group-" + "아프지말고햄보카자";
 
-  /* -----------------------------
-      로컬 마이크 가져오기
-  ------------------------------ */
-  const getLocalAudio = async () => {
-    if (!localStreamRef.current) {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      localStreamRef.current = stream;
-      if (localAudioRef.current) localAudioRef.current.srcObject = stream;
-    }
-    return localStreamRef.current;
-  };
-
-  /* -----------------------------
-      PeerConnection 생성
-  ------------------------------ */
-  const createPeerConnection = (peerId) => {
-    if (peersRef.current[peerId]) return peersRef.current[peerId].pc;
-
-    const pc = new RTCPeerConnection({
-      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-    });
-
-    pc.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket.emit("ice-candidate", {
-          to: peerId,
-          candidate: event.candidate,
-        });
-      }
-    };
-
-    pc.ontrack = (event) => {
-      let audioElem = document.getElementById(`audio-${peerId}`);
-      if (!audioElem) {
-        audioElem = document.createElement("audio");
-        audioElem.id = `audio-${peerId}`;
-        audioElem.autoplay = true;
-        document.body.appendChild(audioElem);
-      }
-      audioElem.srcObject = event.streams[0];
-    };
-
-    localStreamRef.current.getTracks().forEach((track) =>
-      pc.addTrack(track, localStreamRef.current)
-    );
-
-    peersRef.current[peerId] = { pc };
-    return pc;
-  };
-
-  /* -----------------------------
-      Offer 보내기
-  ------------------------------ */
-  const createOffer = async (peerId) => {
-    await getLocalAudio();
-    const pc = createPeerConnection(peerId);
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-
-    socket.emit("offer", { to: peerId, offer });
-  };
-
-  /* -----------------------------
-      음성채팅 입장
-  ------------------------------ */
-  const joinVoiceChat = async () => {
-    await getLocalAudio();
-    socket.emit("join-room", voiceRoomId);
-    setJoinedVoice(true);
-  };
-
-  /* -----------------------------
-      🔥 음성채팅 나가기 추가
-  ------------------------------ */
-  const leaveVoiceChat = () => {
-    socket.emit("leave-room", voiceRoomId);
-
-    // 모든 PeerConnection 종료
-    Object.values(peersRef.current).forEach(({ pc }) => pc.close());
-    peersRef.current = {};
-
-    // 원격 오디오 요소 삭제
-    document.querySelectorAll("audio[id^='audio-']").forEach((el) => el.remove());
-
-    // 내 마이크 종료
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach((t) => t.stop());
-      localStreamRef.current = null;
-    }
-
-    setJoinedVoice(false);
-  };
-
-  /* -----------------------------
-      Socket 이벤트 등록
-  ------------------------------ */
-  useEffect(() => {
-    socket.on("room-users", async (users) => {
-      for (const userId of users) {
-        await createOffer(userId);
-      }
-    });
-
-    socket.on("offer", async ({ from, offer }) => {
-      await getLocalAudio();
-      const pc = createPeerConnection(from);
-      await pc.setRemoteDescription(new RTCSessionDescription(offer));
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-      socket.emit("answer", { to: from, answer });
-    });
-
-    socket.on("answer", async ({ from, answer }) => {
-      const pc = peersRef.current[from]?.pc;
-      if (pc) await pc.setRemoteDescription(new RTCSessionDescription(answer));
-    });
-
-    socket.on("ice-candidate", ({ from, candidate }) => {
-      const pc = peersRef.current[from]?.pc;
-      if (pc && candidate) pc.addIceCandidate(candidate);
-    });
-
-    socket.on("user-left", (peerId) => {
-      const entry = peersRef.current[peerId];
-      if (entry) {
-        entry.pc.close();
-        delete peersRef.current[peerId];
-        const audioElem = document.getElementById(`audio-${peerId}`);
-        if (audioElem) audioElem.remove();
-      }
-    });
-
-    return () => socket.off();
-  }, []);
-
-  /* -----------------------------
-      렌더링 UI
-  ------------------------------ */
-  return (
-    <div className="group-detail-page">
-      <h3>음성채팅</h3>
-
-      {/* 음성 버튼 */}
-      {!joinedVoice ? (
-        <button onClick={joinVoiceChat}>음성채팅 들어가기</button>
-      ) : (
-        <button onClick={leaveVoiceChat} style={{ background: "red", color: "white" }}>
-          음성채팅 나가기
-        </button>
-      )}
-
-      {/* 내 로컬 오디오 */}
-      <audio ref={localAudioRef} autoPlay muted />
-    </div>
-  );
+/* -----------------------------
+로컬 마이크 가져오기
+------------------------------ */
+const getLocalAudio = async () => {
+if (!localStreamRef.current) {
+const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+localStreamRef.current = stream;
+if (localAudioRef.current) localAudioRef.current.srcObject = stream;
 }
+return localStreamRef.current;
+};
 
+/* -----------------------------
+PeerConnection 생성
+------------------------------ */
+const createPeerConnection = (peerId) => {
+if (peersRef.current[peerId]) return peersRef.current[peerId].pc;
+
+
+const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });  
+
+pc.onicecandidate = (event) => {  
+  if (event.candidate) {  
+    socket.emit("ice-candidate", { to: peerId, candidate: event.candidate });  
+  }  
+};  
+
+pc.ontrack = (event) => {  
+  let audioElem = document.getElementById(`audio-${peerId}`);  
+  if (!audioElem) {  
+    audioElem = document.createElement("audio");  
+    audioElem.id = `audio-${peerId}`;  
+    audioElem.autoplay = true;  
+    document.body.appendChild(audioElem);  
+  }  
+  audioElem.srcObject = event.streams[0];  
+};  
+
+localStreamRef.current.getTracks().forEach((track) => pc.addTrack(track, localStreamRef.current));  
+peersRef.current[peerId] = { pc };  
+return pc;  
+
+
+};
+
+/* -----------------------------
+Offer 보내기
+------------------------------ */
+const createOffer = async (peerId) => {
+await getLocalAudio();
+const pc = createPeerConnection(peerId);
+const offer = await pc.createOffer();
+await pc.setLocalDescription(offer);
+socket.emit("offer", { to: peerId, offer });
+};
+
+/* -----------------------------
+음성채팅 입장
+------------------------------ */
+const joinVoiceChat = async () => {
+await getLocalAudio();
+socket.emit("join-room", voiceRoomId);
+setJoinedVoice(true);
+};
+
+/* -----------------------------
+음성채팅 나가기
+------------------------------ */
+const leaveVoiceChat = () => {
+socket.emit("leave-room", voiceRoomId);
+
+Object.values(peersRef.current).forEach(({ pc }) => pc.close());  
+peersRef.current = {};  
+
+document.querySelectorAll("audio[id^='audio-']").forEach((el) => el.remove());  
+
+if (localStreamRef.current) {  
+  localStreamRef.current.getTracks().forEach((t) => t.stop());  
+  localStreamRef.current = null;  
+}  
+
+setParticipants([]);  
+setJoinedVoice(false);  
+
+
+};
+
+/* -----------------------------
+Socket 이벤트 등록
+------------------------------ */
+useEffect(() => {
+socket.on("room-users", async (users) => {
+setParticipants(users);
+for (const userId of users) {
+await createOffer(userId);
+}
+});
+
+
+socket.on("user-joined", (userId) => {  
+  setParticipants((prev) => [...prev, userId]);  
+  createOffer(userId);  
+});  
+
+socket.on("offer", async ({ from, offer }) => {  
+  await getLocalAudio();  
+  const pc = createPeerConnection(from);  
+  await pc.setRemoteDescription(new RTCSessionDescription(offer));  
+  const answer = await pc.createAnswer();  
+  await pc.setLocalDescription(answer);  
+  socket.emit("answer", { to: from, answer });  
+});  
+
+socket.on("answer", async ({ from, answer }) => {  
+  const pc = peersRef.current[from]?.pc;  
+  if (pc) await pc.setRemoteDescription(new RTCSessionDescription(answer));  
+});  
+
+socket.on("ice-candidate", ({ from, candidate }) => {  
+  const pc = peersRef.current[from]?.pc;  
+  if (pc && candidate) pc.addIceCandidate(candidate);  
+});  
+
+socket.on("user-left", (peerId) => {  
+  setParticipants((prev) => prev.filter((id) => id !== peerId));  
+  const entry = peersRef.current[peerId];  
+  if (entry) {  
+    entry.pc.close();  
+    delete peersRef.current[peerId];  
+    const audioElem = document.getElementById(`audio-${peerId}`);  
+    if (audioElem) audioElem.remove();  
+  }  
+});  
+
+return () => socket.off();  
+
+
+}, []);
+
+/* -----------------------------
+렌더링 UI
+------------------------------ */
+return ( <div className="group-detail-page"> <h3>음성채팅</h3>
+
+  {/* 버튼 */}  
+  {!joinedVoice ? (  
+    <button onClick={joinVoiceChat}>음성채팅 들어가기</button>  
+  ) : (  
+    <button onClick={leaveVoiceChat} style={{ background: "red", color: "white" }}>  
+      음성채팅 나가기  
+    </button>  
+  )}  
+
+  {/* 내 로컬 오디오 */}  
+  <audio ref={localAudioRef} autoPlay muted />  
+
+  {/* 참여자 목록 */}  
+  {joinedVoice && (  
+    <div style={{ marginTop: "10px" }}>  
+      <h4>참여자 목록:</h4>  
+      <ul>  
+        {participants.map((id) => (  
+          <li key={id}>{id}</li>  
+        ))}  
+      </ul>  
+    </div>  
+  )}  
+</div> 
+
+);
+}
 
 // import React, { useState, useEffect } from "react";
 // import '../css/GroupDetail.css';
