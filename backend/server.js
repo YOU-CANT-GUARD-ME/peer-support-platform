@@ -14,6 +14,11 @@ app.use(cors());
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 
+// --- Root route ---
+app.get("/", (req, res) => {
+  res.send("✅ Peer Support Backend is running!");
+});
+
 // --- MongoDB Connection ---
 mongoose
   .connect(process.env.MONGO_URI, {
@@ -29,7 +34,6 @@ app.get("/api/posts", async (req, res) => {
   res.json(posts);
 });
 
-// Create Post
 app.post("/api/posts", async (req, res) => {
   const { title, content } = req.body;
   const newPost = new Post({ title, content });
@@ -38,14 +42,11 @@ app.post("/api/posts", async (req, res) => {
 });
 
 // --- Support Groups API ---
-
-// Get all groups
 app.get("/api/groups", async (req, res) => {
   const groups = await SupportGroup.find().sort({ createdAt: -1 });
   res.json(groups);
 });
 
-// Create new group
 app.post("/api/groups", async (req, res) => {
   try {
     const { name, limit, category, desc } = req.body;
@@ -57,7 +58,6 @@ app.post("/api/groups", async (req, res) => {
   }
 });
 
-// Delete a group
 app.delete("/api/groups/:id", async (req, res) => {
   try {
     const deleted = await SupportGroup.findByIdAndDelete(req.params.id);
@@ -72,7 +72,6 @@ app.get("/api/groups/my", async (req, res) => {
   const groups = await SupportGroup.find(); // or filter by user later
   res.json(groups);
 });
-
 
 // --- Diary API ---
 app.get("/api/diary", async (req, res) => {
@@ -97,45 +96,34 @@ app.delete("/api/diary/:id", async (req, res) => {
 });
 
 // ------------------------------
-// ⭐⭐ WebRTC 음성채팅 socket.io 추가 ⭐⭐
+// WebRTC / Socket.IO
 // ------------------------------
 import http from "http";
 import { Server } from "socket.io";
 
-// 기존 app, mongoose 연결 코드 그대로
-
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", // 프론트엔드 주소로 변경 가능
+    origin: "*",
     methods: ["GET", "POST"],
   },
 });
 
-// -----------------------------
-// 음성채팅용 Socket.IO
-// -----------------------------
 const rooms = {}; // roomId -> Set(socket.id)
 
 io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
 
-  // 방 참가
   socket.on("join-room", (roomId) => {
     socket.join(roomId);
-
     if (!rooms[roomId]) rooms[roomId] = new Set();
     rooms[roomId].add(socket.id);
 
-    // 방에 있는 유저 목록 보내기
     const users = Array.from(rooms[roomId]).filter((id) => id !== socket.id);
     socket.emit("room-users", users);
-
-    // 다른 유저에게 새로운 참가자 알림
     socket.to(roomId).emit("user-joined", socket.id);
   });
 
-  // 방 떠남
   socket.on("leave-room", (roomId) => {
     socket.leave(roomId);
     if (rooms[roomId]) {
@@ -144,22 +132,18 @@ io.on("connection", (socket) => {
     }
   });
 
-  // Offer
   socket.on("offer", ({ to, offer }) => {
     io.to(to).emit("offer", { from: socket.id, offer });
   });
 
-  // Answer
   socket.on("answer", ({ to, answer }) => {
     io.to(to).emit("answer", { from: socket.id, answer });
   });
 
-  // ICE Candidate
   socket.on("ice-candidate", ({ to, candidate }) => {
     io.to(to).emit("ice-candidate", { from: socket.id, candidate });
   });
 
-  // 연결 끊김
   socket.on("disconnecting", () => {
     const socketRooms = Array.from(socket.rooms).filter((r) => r !== socket.id);
     socketRooms.forEach((roomId) => {
@@ -172,7 +156,7 @@ io.on("connection", (socket) => {
 });
 
 // -----------------------------
-// 서버 시작
+// Start server
 // -----------------------------
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

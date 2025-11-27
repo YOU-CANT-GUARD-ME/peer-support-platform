@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:5000");
+const socket = io("https://peer-support-platform.onrender.com");
 ; // 서버 주소
 
 export default function GroupDetailPage() {
