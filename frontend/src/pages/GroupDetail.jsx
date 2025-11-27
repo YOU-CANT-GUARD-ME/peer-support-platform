@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 
-const socket = io("[http://localhost:3001](http://localhost:3001)"); // 서버 주소
+const socket = io("http://localhost:5000");
+; // 서버 주소
 
 export default function GroupDetailPage() {
 /* -----------------------------
