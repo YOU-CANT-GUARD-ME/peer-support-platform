@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../css/Group.css";
 import { motion } from "framer-motion";
 import { API_BASE_URL } from "../api";
+import { Link } from "react-router-dom";
 
 // --- 그룹 생성 모달 ---
 function GroupModal({ setIsModalOpen, onGroupCreated }) {
@@ -90,7 +91,7 @@ function NewGroups({ groups, onDelete }) {
           </div>
 
           <div className="group-buttons">
-            <button className="join-btn">가입</button>
+            <Link to='/group-detail'><button className="join-btn">가입</button></Link>
             <button className="delete-btn" onClick={() => onDelete(g._id)}>
               삭제
             </button>
