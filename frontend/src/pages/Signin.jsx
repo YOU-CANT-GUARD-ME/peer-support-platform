@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../api";
 import "../css/sign.css";
+import { UserContext } from "../contexts/UserContext";   // ⬅ 추가
 
 export default function SignIn() {
   const navigate = useNavigate();
+
+  const { login } = useContext(UserContext); // ⬅ Context의 로그인 함수 가져오기
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -25,14 +29,14 @@ export default function SignIn() {
         return;
       }
 
-      // ✅ JWT와 user 저장
+      // 🔥 UserContext에 로그인 정보 전달 → Navbar 즉시 업데이트됨
+      login(data.user);
+
+      // JWT는 추가로 저장
       localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      console.log(data);
-      
 
       alert("로그인 성공!");
-      navigate("/"); // 홈으로 이동
+      navigate("/");
     } catch (err) {
       console.error(err);
       alert("서버 오류 발생");
@@ -46,12 +50,22 @@ export default function SignIn() {
 
         <div className="input-group">
           <label>이메일</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="example@sdh.hs.kr" />
+          <input 
+            type="email" 
+            value={email}
+            onChange={(e) => setEmail(e.target.value)} 
+            placeholder="example@sdh.hs.kr" 
+          />
         </div>
 
         <div className="input-group">
           <label>비밀번호</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="******"/>
+          <input 
+            type="password" 
+            value={password}
+            onChange={(e) => setPassword(e.target.value)} 
+            placeholder="******"
+          />
         </div>
 
         <button type="submit" className="signup-btn">로그인</button>
