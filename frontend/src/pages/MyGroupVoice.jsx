@@ -7,7 +7,7 @@ const SOCKET_URL = "https://peer-support-platform.onrender.com";
 
 // Use polling fallback for Render
 const socket = io(SOCKET_URL, {
-  transports: ["websocket", "polling"], // websocket first, fallback to polling
+  transports: ["websocket", "polling"],  upgrade: true// websocket first, fallback to polling
 });
 
 export default function MyGroupVoice({ roomId, nickname }) {
@@ -24,11 +24,8 @@ export default function MyGroupVoice({ roomId, nickname }) {
       localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       localAudio.current.srcObject = localStream;
 
-  socket.on("room-users", (users) => {
-    const list = {};
-    users.forEach((u) => {  list[u.id] = u.nickname; });
-    setParticipants(list);
-  });
+      // Join room
+      socket.emit("join-room", { roomId, nickname });
 
       // Existing users in room
       socket.on("room-users", (users) => {

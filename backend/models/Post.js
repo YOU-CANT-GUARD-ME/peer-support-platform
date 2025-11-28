@@ -4,7 +4,6 @@ const PostSchema = new mongoose.Schema(
   {
     title: String,
     content: String,
-    author: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // 작성자
 
     comments: [
       {
@@ -19,8 +18,18 @@ const PostSchema = new mongoose.Schema(
       }
     ],
 
-    meTooCount: { type: Number, default: 0 },
-    meTooUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    // How many "Me Too" clicks
+    meTooCount: {
+      type: Number,
+      default: 0,
+    },
+
+    // The actual users who clicked Me Too
+    meTooUsers: [
+      {
+        type: String, // store a userId or username
+      }
+    ],
   },
   { timestamps: true }
 );
