@@ -1,7 +1,7 @@
 // 📌 src/pages/MyGroupPage.jsx
 
 import React, { useState } from "react";
-import "../css/Mygroup.css";
+import "../css/MyGroup.css";
 import ProfileIcon from "../assets/profile.jpg";
 import { useNavigate } from "react-router-dom";
 
