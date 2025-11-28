@@ -21,12 +21,9 @@ const __dirname = path.dirname(__filename);
 // CORS SETUP
 // --------------------------------------------------
 const allowedOrigins = [
-  "http://localhost:5173",                       // Local dev
-  "https://your-vercel-domain.vercel.app",       // Your Vercel frontend
+  "http://localhost:5173",                             // Local dev
+  "https://digitechrecoverycentor.vercel.app"          // Your real Vercel frontend
 ];
-
-// If deployed on a custom Vercel domain, add it here later
-// allowedOrigins.push("https://custom-domain.com");
 
 app.use(
   cors({
@@ -171,7 +168,7 @@ io.on("connection", (socket) => {
 });
 
 // --------------------------------------------------
-// Serve Frontend if needed
+// Serve Frontend (optional)
 // --------------------------------------------------
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
