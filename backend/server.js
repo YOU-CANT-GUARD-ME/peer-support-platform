@@ -22,7 +22,7 @@ const __dirname = path.dirname(__filename);
 // --------------------------------------------------
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://digitechrecoverycentor.vercel.app"
+  "https://digitechrecoverycentor.vercel.app",
 ];
 
 app.use(
@@ -47,8 +47,6 @@ mongoose
 // --------------------------------------------------
 // API ROUTES
 // --------------------------------------------------
-
-// Posts routes
 app.get("/api/posts", async (req, res) => {
   const posts = await Post.find().sort({ createdAt: -1 });
   res.json(posts);
@@ -61,7 +59,6 @@ app.post("/api/posts", async (req, res) => {
   res.json(newPost);
 });
 
-// Support Group routes
 app.get("/api/groups", async (req, res) => {
   const groups = await SupportGroup.find().sort({ createdAt: -1 });
   res.json(groups);
@@ -93,7 +90,6 @@ app.get("/api/groups/my", async (req, res) => {
   res.json(groups);
 });
 
-// Diary routes
 app.get("/api/diary", async (req, res) => {
   const entries = await Diary.find().sort({ createdAt: -1 });
   res.json(entries);
@@ -119,7 +115,6 @@ app.delete("/api/diary/:id", async (req, res) => {
 // SOCKET.IO (VOICE CHAT)
 // --------------------------------------------------
 const server = http.createServer(app);
-
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
@@ -127,18 +122,19 @@ const io = new Server(server, {
   },
 });
 
-const rooms = {};
+const rooms = {}; // roomId => Map(socket.id => nickname)
 
 io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
 
   socket.on("join-room", ({ roomId, nickname }) => {
     socket.join(roomId);
+    socket.nickname = nickname;
 
     if (!rooms[roomId]) rooms[roomId] = new Map();
     rooms[roomId].set(socket.id, nickname);
 
-    // Send user list to new user
+    // Send current users to the new user
     const users = Array.from(rooms[roomId]).map(([id, name]) => ({
       id,
       nickname: name,
@@ -146,13 +142,10 @@ io.on("connection", (socket) => {
     socket.emit("room-users", users);
 
     // Notify others
-    socket.to(roomId).emit("user-joined", {
-      id: socket.id,
-      nickname,
-    });
+    socket.to(roomId).emit("user-joined", { id: socket.id, nickname });
   });
 
-  socket.on("leave-room", (roomId) => {
+  socket.on("leave-room", ({ roomId }) => {
     if (rooms[roomId]) {
       rooms[roomId].delete(socket.id);
       socket.to(roomId).emit("user-left", { id: socket.id });
@@ -160,7 +153,6 @@ io.on("connection", (socket) => {
     socket.leave(roomId);
   });
 
-  // WebRTC signaling
   socket.on("offer", ({ to, offer }) =>
     io.to(to).emit("offer", { from: socket.id, offer })
   );
@@ -184,10 +176,9 @@ io.on("connection", (socket) => {
 });
 
 // --------------------------------------------------
-// Serve Frontend (Optional – for local only)
+// Serve Frontend (Optional)
 // --------------------------------------------------
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
-
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/dist", "index.html"));
 });
@@ -196,7 +187,6 @@ app.get("*", (req, res) => {
 // START SERVER
 // --------------------------------------------------
 const PORT = process.env.PORT || 5000;
-
 server.listen(PORT, () => {
   console.log(`Server + Socket.IO running on port ${PORT}`);
 });

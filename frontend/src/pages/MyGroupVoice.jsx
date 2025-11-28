@@ -2,8 +2,13 @@ import React, { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import "../css/GroupVoice.css";
 
+// Backend URL
 const SOCKET_URL = "https://peer-support-platform.onrender.com";
-const socket = io(SOCKET_URL, { transports: ["websocket"] });
+
+// Use polling fallback for Render
+const socket = io(SOCKET_URL, {
+  transports: ["websocket", "polling"], // websocket first, fallback to polling
+});
 
 export default function MyGroupVoice({ roomId, nickname }) {
   const localAudio = useRef(null);
@@ -15,22 +20,25 @@ export default function MyGroupVoice({ roomId, nickname }) {
     let localStream;
 
     const setup = async () => {
+      // Get user mic
       localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       localAudio.current.srcObject = localStream;
 
-      // Correct join-room payload
+      // Join room
       socket.emit("join-room", { roomId, nickname });
 
-      // Get current users in room
+      // Existing users in room
       socket.on("room-users", (users) => {
         const formatted = {};
-        users.forEach((u) => { formatted[u.id] = u.nickname; });
+        users.forEach((u) => {
+          formatted[u.id] = u.nickname || "Member";
+        });
         setParticipants(formatted);
       });
 
       // New user joined
       socket.on("user-joined", ({ id, nickname }) => {
-        setParticipants((prev) => ({ ...prev, [id]: nickname }));
+        setParticipants((prev) => ({ ...prev, [id]: nickname || "Member" }));
       });
 
       // User left
@@ -65,14 +73,15 @@ export default function MyGroupVoice({ roomId, nickname }) {
 
     setup();
 
+    // Cleanup on unmount
     return () => {
-      socket.emit("leave-room", roomId);
-      socket.disconnect();
+      socket.emit("leave-room", { roomId, nickname });
       Object.values(pcs.current).forEach((pc) => pc.close());
-      localStream?.getTracks().forEach((t) => t.stop());
+      localStream?.getTracks().forEach((track) => track.stop());
     };
   }, [roomId, nickname]);
 
+  // Create peer connection
   const createPeerConnection = (peerId, localStream) => {
     const pc = new RTCPeerConnection();
 
@@ -93,7 +102,9 @@ export default function MyGroupVoice({ roomId, nickname }) {
       }
     };
 
+    // Send local audio to remote peers
     localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
+
     return pc;
   };
 
