@@ -65,6 +65,11 @@
     box-shadow: 0 10px 18px rgba(0, 0, 0, 0.2);
 }
 
+.diary-modal {
+    width: 500px;
+    height: 500px;
+}
+
 .diary-emotion {
     font-weight: bold;
     font-size: 16px;

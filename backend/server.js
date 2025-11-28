@@ -47,7 +47,6 @@ mongoose
 // --------------------------------------------------
 // API ROUTES
 // --------------------------------------------------
-<<<<<<< HEAD
 
 // Posts routes
 // Create Post
@@ -60,11 +59,6 @@ app.post("/api/posts", async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: "Post creation failed", error: err.message });
   }
-=======
-app.get("/api/posts", async (req, res) => {
-  const posts = await Post.find().sort({ createdAt: -1 });
-  res.json(posts);
->>>>>>> 2a6dd370fbb1d0f44363794dc73fdf18499e8ac4
 });
 
 // Delete Post
@@ -79,7 +73,6 @@ app.delete("/api/posts/:id", async (req, res) => {
   res.json({ message: "Post deleted" });
 });
 
-<<<<<<< HEAD
 // Me Too
 app.post("/api/posts/:id/me-too", async (req, res) => {
   const { userId } = req.body;
@@ -112,8 +105,6 @@ app.post("/api/posts/:id/comments", async (req, res) => {
 
 
 // Support Group routes
-=======
->>>>>>> 2a6dd370fbb1d0f44363794dc73fdf18499e8ac4
 app.get("/api/groups", async (req, res) => {
   const groups = await SupportGroup.find().sort({ createdAt: -1 });
   res.json(groups);
@@ -229,22 +220,3 @@ io.on("connection", (socket) => {
     }
   });
 });
-<<<<<<< HEAD
-=======
-
-// --------------------------------------------------
-// Serve Frontend (Optional)
-// --------------------------------------------------
-app.use(express.static(path.join(__dirname, "../frontend/dist")));
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/dist", "index.html"));
-});
-
-// --------------------------------------------------
-// START SERVER
-// --------------------------------------------------
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`Server + Socket.IO running on port ${PORT}`);
-});
->>>>>>> 2a6dd370fbb1d0f44363794dc73fdf18499e8ac4

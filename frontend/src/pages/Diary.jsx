@@ -178,7 +178,7 @@ export default function Diary() {
       {/* View Diary Modal */}
       {currentEntry && (
         <div className="modal-backdrop" onClick={() => setCurrentEntry(null)}>
-          <div className="modal themed" style={{ backgroundColor: currentEntry.theme }} onClick={e => e.stopPropagation()}>
+          <div className="modal diary-modal themed" style={{ backgroundColor: currentEntry.theme }} onClick={e => e.stopPropagation()}>
             <h3>{currentEntry.emotion} - {new Date(currentEntry.createdAt).toLocaleString("ko-KR")}</h3>
             <p>{currentEntry.content}</p>
             <div className="modal-buttons">
