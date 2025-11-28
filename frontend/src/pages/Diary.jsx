@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { API_BASE_URL } from "../api";
 import "../css/Diary.css";
+
+// Local development API
+export const API_BASE_URL = "http://localhost:5000";
 
 export default function Diary() {
   const [entries, setEntries] = useState([]);
@@ -13,13 +15,12 @@ export default function Diary() {
   const [selectedThemeId, setSelectedThemeId] = useState("yellow");
 
   const emotions = ["행복", "슬픔", "분노", "불안", "평온"];
-
   const colorThemes = [
     { id: "yellow", color: "#fff9c4" },
     { id: "pink", color: "#f8bbd0" },
     { id: "blue", color: "#bbdefb" },
     { id: "purple", color: "#e1bee7" },
-    { id: "red", color: "#ffcdd2" }
+    { id: "red", color: "#ffcdd2" },
   ];
 
   const themeMap = colorThemes.reduce((acc, t) => {
@@ -35,9 +36,9 @@ export default function Diary() {
         if (!res.ok) throw new Error("Failed to fetch diary entries");
         const data = await res.json();
 
-        const fixedData = data.map(entry => ({
+        const fixedData = data.map((entry) => ({
           ...entry,
-          theme: entry.theme?.id ? themeMap[entry.theme.id] : themeMap["yellow"]
+          theme: themeMap[entry.themeId] || themeMap.yellow,
         }));
 
         setEntries(fixedData);
@@ -52,23 +53,16 @@ export default function Diary() {
   const handleSubmit = async () => {
     if (!emotion || !content.trim()) return;
 
-    const newEntry = {
-      emotion,
-      content,
-      theme: { id: selectedThemeId }
-    };
-
     try {
       const res = await fetch(`${API_BASE_URL}/api/diary`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newEntry),
+        body: JSON.stringify({ emotion, content, themeId: selectedThemeId }),
       });
 
       if (!res.ok) throw new Error("Failed to save diary");
-
       const saved = await res.json();
-      saved.theme = themeMap[saved.theme.id] || themeMap["yellow"];
+      saved.theme = themeMap[saved.themeId] || themeMap.yellow;
 
       setEntries([saved, ...entries]);
       setEmotion("");
@@ -85,7 +79,7 @@ export default function Diary() {
     try {
       const res = await fetch(`${API_BASE_URL}/api/diary/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete entry");
-      setEntries(entries.filter(e => e._id !== id));
+      setEntries(entries.filter((e) => e._id !== id));
       setCurrentEntry(null);
     } catch (err) {
       console.error(err);
@@ -116,12 +110,12 @@ export default function Diary() {
       <div className="post-btn" onClick={() => setIsModalOpen(true)}>+</div>
 
       <div className="diary-grid">
-        {entries.map(entry => (
+        {entries.map((entry) => (
           <motion.div
             key={entry._id}
             className="diary-card"
             style={{ backgroundColor: entry.theme }}
-            whileHover={{ scale: 1.05, rotate: 0 }}
+            whileHover={{ scale: 1.05 }}
             onClick={() => setCurrentEntry(entry)}
           >
             <div className="diary-emotion">{entry.emotion}</div>
@@ -134,11 +128,10 @@ export default function Diary() {
       {/* New Diary Modal */}
       {isModalOpen && (
         <div className="modal-backdrop" onClick={() => setIsModalOpen(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>새 일기 작성</h3>
-
             <div className="emotion-selector">
-              {emotions.map(e => (
+              {emotions.map((e) => (
                 <button
                   key={e}
                   className={emotion === e ? "selected" : ""}
@@ -151,7 +144,7 @@ export default function Diary() {
 
             <h4>테마 선택</h4>
             <div className="color-theme-selector">
-              {colorThemes.map(theme => (
+              {colorThemes.map((theme) => (
                 <div
                   key={theme.id}
                   className={`color-theme ${selectedThemeId === theme.id ? "selected-color" : ""}`}
@@ -164,7 +157,7 @@ export default function Diary() {
             <textarea
               placeholder="오늘의 일기를 작성하세요..."
               value={content}
-              onChange={e => setContent(e.target.value)}
+              onChange={(e) => setContent(e.target.value)}
             />
 
             <div className="modal-buttons">
@@ -178,7 +171,7 @@ export default function Diary() {
       {/* View Diary Modal */}
       {currentEntry && (
         <div className="modal-backdrop" onClick={() => setCurrentEntry(null)}>
-          <div className="modal themed" style={{ backgroundColor: currentEntry.theme }} onClick={e => e.stopPropagation()}>
+          <div className="modal themed" style={{ backgroundColor: currentEntry.theme }} onClick={(e) => e.stopPropagation()}>
             <h3>{currentEntry.emotion} - {new Date(currentEntry.createdAt).toLocaleString("ko-KR")}</h3>
             <p>{currentEntry.content}</p>
             <div className="modal-buttons">

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import "../css/Group.css";
 import { motion } from "framer-motion";
-import { API_BASE_URL } from "../api";
 import { Link } from "react-router-dom";
+
+// Change this to your local backend
+const API_BASE_URL = "http://localhost:5000";
 
 /* ---------------------------
    그룹 생성 모달
