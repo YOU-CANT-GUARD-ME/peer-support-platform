@@ -4,7 +4,9 @@ import { motion } from "framer-motion";
 import { API_BASE_URL } from "../api";
 import { Link } from "react-router-dom";
 
-// --- 그룹 생성 모달 ---
+/* ---------------------------
+   그룹 생성 모달
+---------------------------- */
 function GroupModal({ setIsModalOpen, onGroupCreated }) {
   const [name, setName] = useState("");
   const [limit, setLimit] = useState("");
@@ -26,9 +28,11 @@ function GroupModal({ setIsModalOpen, onGroupCreated }) {
       });
 
       const data = await res.json();
+
       if (res.ok) {
         onGroupCreated(data);
         setIsModalOpen(false);
+
         setName("");
         setLimit("");
         setCategory("");
@@ -46,10 +50,19 @@ function GroupModal({ setIsModalOpen, onGroupCreated }) {
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h3>그룹 생성</h3>
 
-        <input type="text" placeholder="그룹 이름"
-          value={name} onChange={(e) => setName(e.target.value)} />
-        <input type="number" placeholder="인원 제한"
-          value={limit} onChange={(e) => setLimit(e.target.value)} />
+        <input
+          type="text"
+          placeholder="그룹 이름"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+
+        <input
+          type="number"
+          placeholder="인원 제한"
+          value={limit}
+          onChange={(e) => setLimit(e.target.value)}
+        />
 
         <h4>카테고리 선택</h4>
         <div className="category-selector">
@@ -64,8 +77,11 @@ function GroupModal({ setIsModalOpen, onGroupCreated }) {
           ))}
         </div>
 
-        <textarea placeholder="그룹 설명을 입력하세요"
-          value={desc} onChange={(e) => setDesc(e.target.value)} />
+        <textarea
+          placeholder="그룹 설명을 입력하세요"
+          value={desc}
+          onChange={(e) => setDesc(e.target.value)}
+        />
 
         <div className="modal-buttons">
           <button onClick={() => setIsModalOpen(false)}>취소</button>
@@ -76,22 +92,29 @@ function GroupModal({ setIsModalOpen, onGroupCreated }) {
   );
 }
 
-// --- 새 그룹 보기 ---
-function NewGroups({ groups, onDelete }) {
+/* ---------------------------
+   그룹 목록 UI
+---------------------------- */
+function GroupList({ groups, onDelete }) {
   return (
     <div className="group-list">
-      {groups.length === 0 && <p>새로운 그룹이 없습니다.</p>}
+      {groups.length === 0 && <p>등록된 그룹이 없습니다.</p>}
+
       {groups.map((g) => (
         <div className="group-card" key={g._id || g.id}>
           <h2>{g.name}</h2>
           <p className="g-desc">{g.desc}</p>
+
           <div className="g-info">
             <span>카테고리: {g.category}</span>
             <span>인원: {g.members || 1} / {g.limit}</span>
           </div>
 
           <div className="group-buttons">
-            <Link to='/group-detail'><button className="join-btn">가입</button></Link>
+            <Link to="/my-group">
+              <button className="join-btn">가입</button>
+            </Link>
+
             <button className="delete-btn" onClick={() => onDelete(g._id)}>
               삭제
             </button>
@@ -102,36 +125,14 @@ function NewGroups({ groups, onDelete }) {
   );
 }
 
-// --- 마이 그룹 보기 ---
-function MyGroups({ myGroups }) {
-  return (
-    <div className="group-list">
-      {myGroups.length === 0 ? (
-        <p>가입한 그룹이 없습니다.</p>
-      ) : (
-        myGroups.map((g) => (
-          <div className="group-card" key={g._id || g.id}>
-            <h2>{g.name}</h2>
-            <p className="g-desc">{g.desc}</p>
-            <div className="g-info">
-              <span>카테고리: {g.category}</span>
-              <span>인원: {g.members || 1} / {g.limit}</span>
-            </div>
-            <button className="join-btn joined">참여중</button>
-          </div>
-        ))
-      )}
-    </div>
-  );
-}
-
-// --- Group 페이지 ---
+/* ---------------------------
+   메인 Group 페이지
+---------------------------- */
 export default function Group() {
   const [groups, setGroups] = useState([]);
-  const [myGroups, setMyGroups] = useState([]);
-  const [activeTab, setActiveTab] = useState("new");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // 그룹 목록 가져오기
   const fetchGroups = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/groups`);
@@ -142,24 +143,12 @@ export default function Group() {
     }
   };
 
-  const fetchMyGroups = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/groups/my`);
-      const data = await res.json();
-      setMyGroups(data);
-    } catch (err) {
-      console.error("Error fetching my groups:", err);
-    }
-  };
-
   useEffect(() => {
     fetchGroups();
-    fetchMyGroups();
   }, []);
 
   const handleGroupCreated = (newGroup) => {
     setGroups([newGroup, ...groups]);
-    setActiveTab("new");
   };
 
   const handleDelete = async (id) => {
@@ -176,7 +165,7 @@ export default function Group() {
 
   return (
     <div className="groups-page">
-      {/* 웰컴 박스 */}
+      
       <div className="welcome-box">
         <motion.h1
           initial={{ opacity: 0, y: 15 }}
@@ -190,39 +179,17 @@ export default function Group() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
         >
-          당신만의 그룹을 만들고 가입하세요.
+          원하는 그룹을 만들고 참여해보세요.
         </motion.p>
       </div>
 
       {/* 그룹 생성 버튼 */}
       <div className="create-btn" onClick={() => setIsModalOpen(true)}>+</div>
 
-      {/* 탭 버튼 */}
-      <div className="group-tabs">
-        <button
-          className={activeTab === "new" ? "active-tab" : ""}
-          onClick={() => setActiveTab("new")}
-        >
-          새 그룹 보기
-        </button>
-        <button
-          className={activeTab === "my" ? "active-tab" : ""}
-          onClick={() => setActiveTab("my")}
-        >
-          마이 그룹
-        </button>
-      </div>
+      {/* 그룹 목록 */}
+      <GroupList groups={groups} onDelete={handleDelete} />
 
-      {/* 탭 내용 */}
-      <div className="tab-content">
-        {activeTab === "new" ? (
-          <NewGroups groups={groups} onDelete={handleDelete} />
-        ) : (
-          <MyGroups myGroups={myGroups} />
-        )}
-      </div>
-
-      {/* 모달 */}
+      {/* 그룹 생성 모달 */}
       {isModalOpen && (
         <GroupModal
           setIsModalOpen={setIsModalOpen}
