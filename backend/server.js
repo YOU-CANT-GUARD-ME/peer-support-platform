@@ -17,23 +17,41 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Middleware
-app.use(cors());
+// --------------------------------------------------
+// CORS SETUP
+// --------------------------------------------------
+const allowedOrigins = [
+  "http://localhost:5173",                       // Local dev
+  "https://your-vercel-domain.vercel.app",       // Your Vercel frontend
+];
+
+// If deployed on a custom Vercel domain, add it here later
+// allowedOrigins.push("https://custom-domain.com");
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 
-// --- MongoDB Connection ---
+// --------------------------------------------------
+// MongoDB
+// --------------------------------------------------
 mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log(err));
 
-// --- API Routes ---
+// --------------------------------------------------
+// API ROUTES
+// --------------------------------------------------
 
-// Posts
+// Posts routes
 app.get("/api/posts", async (req, res) => {
   const posts = await Post.find().sort({ createdAt: -1 });
   res.json(posts);
@@ -46,7 +64,7 @@ app.post("/api/posts", async (req, res) => {
   res.json(newPost);
 });
 
-// Support Groups
+// Support Group routes
 app.get("/api/groups", async (req, res) => {
   const groups = await SupportGroup.find().sort({ createdAt: -1 });
   res.json(groups);
@@ -78,7 +96,7 @@ app.get("/api/groups/my", async (req, res) => {
   res.json(groups);
 });
 
-// Diary
+// Diary routes
 app.get("/api/diary", async (req, res) => {
   const entries = await Diary.find().sort({ createdAt: -1 });
   res.json(entries);
@@ -100,12 +118,16 @@ app.delete("/api/diary/:id", async (req, res) => {
   res.json({ message: "Entry deleted" });
 });
 
-// ------------------------------
-// Socket.IO for voice chat
-// ------------------------------
+// --------------------------------------------------
+// SOCKET.IO
+// --------------------------------------------------
 const server = http.createServer(app);
+
 const io = new Server(server, {
-  cors: { origin: "*", methods: ["GET", "POST"] },
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+  },
 });
 
 const rooms = {};
@@ -148,17 +170,17 @@ io.on("connection", (socket) => {
   });
 });
 
-// ------------------------------
-// Serve Vite frontend
-// ------------------------------
+// --------------------------------------------------
+// Serve Frontend if needed
+// --------------------------------------------------
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/dist", "index.html"));
 });
 
-// ------------------------------
-// Start server
-// ------------------------------
+// --------------------------------------------------
+// START SERVER
+// --------------------------------------------------
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
