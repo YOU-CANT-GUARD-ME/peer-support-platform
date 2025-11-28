@@ -20,7 +20,7 @@ await startLocalStream();
 
   socket.on("room-users", (users) => {
     const list = {};
-    users.forEach((u) => { list[u.id] = u.nickname; });
+    users.forEach((u) => {  list[u.id] = u.nickname; });
     setParticipants(list);
   });
 
