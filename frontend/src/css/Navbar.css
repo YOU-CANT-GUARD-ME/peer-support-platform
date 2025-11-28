@@ -6,12 +6,12 @@
   height: 70px;
   padding: 0 2.5rem;
 
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+display: flex;
+justify-content: space-between;
+align-items: center;
 
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(8px);
+background: rgba(255, 255, 255, 0.75);
+backdrop-filter: blur(8px);
 
   color: #333;
   z-index: 999;

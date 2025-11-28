@@ -2,21 +2,27 @@ import React, { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import "../css/GroupVoice.css";
 
-const SOCKET_URL = "[https://digitech-recovery-center.onrender.com](https://digitech-recovery-center.onrender.com)";
-const socket = io(SOCKET_URL);
+// Backend URL
+const SOCKET_URL = "https://peer-support-platform.onrender.com";
+
+// Use polling fallback for Render
+const socket = io(SOCKET_URL, {
+  transports: ["websocket", "polling"], // websocket first, fallback to polling
+});
 
 export default function MyGroupVoice({ roomId, nickname }) {
-const localAudio = useRef(null);
-const pcs = useRef({});
-const localStreamRef = useRef(null);
-const [participants, setParticipants] = useState({});
-const [micOn, setMicOn] = useState(true);
+  const localAudio = useRef(null);
+  const [participants, setParticipants] = useState({});
+  const [micOn, setMicOn] = useState(true);
+  const pcs = useRef({});
 
-useEffect(() => {
-const setup = async () => {
-await startLocalStream();
+  useEffect(() => {
+    let localStream;
 
-  socket.emit("join-room", { roomId, nickname });
+    const setup = async () => {
+      // Get user mic
+      localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      localAudio.current.srcObject = localStream;
 
   socket.on("room-users", (users) => {
     const list = {};
@@ -24,118 +30,122 @@ await startLocalStream();
     setParticipants(list);
   });
 
-  socket.on("user-joined", ({ id, nickname }) => {
-    setParticipants((prev) => ({ ...prev, [id]: nickname }));
-  });
+      // Existing users in room
+      socket.on("room-users", (users) => {
+        const formatted = {};
+        users.forEach((u) => {
+          formatted[u.id] = u.nickname || "Member";
+        });
+        setParticipants(formatted);
+      });
 
-  socket.on("user-left", ({ id }) => {
-    setParticipants((prev) => {
-      const copy = { ...prev };
-      delete copy[id];
-      return copy;
-    });
-  });
+      // New user joined
+      socket.on("user-joined", ({ id, nickname }) => {
+        setParticipants((prev) => ({ ...prev, [id]: nickname || "Member" }));
+      });
 
-  // WebRTC signaling
-  socket.on("offer", async ({ from, offer }) => {
-    const pc = createPeerConnection(from);
-    pcs.current[from] = pc;
-    await pc.setRemoteDescription(new RTCSessionDescription(offer));
-    const answer = await pc.createAnswer();
-    await pc.setLocalDescription(answer);
-    socket.emit("answer", { to: from, answer });
-  });
+      // User left
+      socket.on("user-left", ({ id }) => {
+        setParticipants((prev) => {
+          const copy = { ...prev };
+          delete copy[id];
+          return copy;
+        });
+      });
 
-  socket.on("answer", async ({ from, answer }) => {
-    await pcs.current[from].setRemoteDescription(new RTCSessionDescription(answer));
-  });
+      // WebRTC signaling
+      socket.on("offer", async ({ from, offer }) => {
+        const pc = createPeerConnection(from, localStream);
+        pcs.current[from] = pc;
 
-  socket.on("ice-candidate", ({ from, candidate }) => {
-    pcs.current[from]?.addIceCandidate(new RTCIceCandidate(candidate));
-  });
-};
+        await pc.setRemoteDescription(new RTCSessionDescription(offer));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
 
-const startLocalStream = async () => {
-  localStreamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
-  localAudio.current.srcObject = localStreamRef.current;
-};
+        socket.emit("answer", { to: from, answer });
+      });
 
-const createPeerConnection = (peerId) => {
-  const pc = new RTCPeerConnection();
-  pc.ontrack = (event) => {
-    let audioEl = document.getElementById(`audio-${peerId}`);
-    if (!audioEl) {
-      audioEl = document.createElement("audio");
-      audioEl.id = `audio-${peerId}`;
-      audioEl.autoplay = true;
-      document.body.appendChild(audioEl);
+      socket.on("answer", async ({ from, answer }) => {
+        await pcs.current[from]?.setRemoteDescription(new RTCSessionDescription(answer));
+      });
+
+      socket.on("ice-candidate", ({ from, candidate }) => {
+        pcs.current[from]?.addIceCandidate(new RTCIceCandidate(candidate));
+      });
+    };
+
+    setup();
+
+    // Cleanup on unmount
+    return () => {
+      socket.emit("leave-room", { roomId, nickname });
+      Object.values(pcs.current).forEach((pc) => pc.close());
+      localStream?.getTracks().forEach((track) => track.stop());
+    };
+  }, [roomId, nickname]);
+
+  // Create peer connection
+  const createPeerConnection = (peerId, localStream) => {
+    const pc = new RTCPeerConnection();
+
+    pc.ontrack = (event) => {
+      let audioEl = document.getElementById(`audio-${peerId}`);
+      if (!audioEl) {
+        audioEl = document.createElement("audio");
+        audioEl.id = `audio-${peerId}`;
+        audioEl.autoplay = true;
+        document.body.appendChild(audioEl);
+      }
+      audioEl.srcObject = event.streams[0];
+    };
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit("ice-candidate", { to: peerId, candidate: event.candidate });
+      }
+    };
+
+    // Send local audio to remote peers
+    localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
+
+    return pc;
+  };
+
+  const toggleMic = () => {
+    const stream = localAudio.current.srcObject;
+    if (stream) {
+      stream.getAudioTracks()[0].enabled = !micOn;
+      setMicOn(!micOn);
     }
-    audioEl.srcObject = event.streams[0];
-  };
-  pc.onicecandidate = (e) => {
-    if (e.candidate) socket.emit("ice-candidate", { to: peerId, candidate: e.candidate });
   };
 
-  if (localStreamRef.current) {
-    localStreamRef.current.getTracks().forEach(track => pc.addTrack(track, localStreamRef.current));
-  }
-  return pc;
-};
+  return (
+    <div className="voice-page">
+      <div className="voice-sidebar">
+        <h3>참여자</h3>
+        <div className="voice-participants">
+          {Object.entries(participants).map(([id, name]) => (
+            <div className="member" key={id}>
+              <div className="avatar" />
+              <div className="meta">
+                <span className="name">{name}</span>
+                <span className="role">{id === socket.id ? "You" : "Member"}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <button className="leave-btn" onClick={() => window.location.reload()}>
+          나가기
+        </button>
+      </div>
 
-setup();
-
-return () => {
-  socket.emit("leave-room", roomId);
-  socket.disconnect();
-  Object.values(pcs.current).forEach(pc => pc.close());
-  localStreamRef.current?.getTracks().forEach(t => t.stop());
-};
-
-}, [nickname, roomId]);
-
-const toggleMic = async () => {
-if (micOn) {
-// 마이크 완전히 끄기
-localStreamRef.current?.getTracks().forEach(t => t.stop());
-localStreamRef.current = null;
-
-  // PeerConnection에서 기존 오디오 트랙 제거
-  Object.values(pcs.current).forEach(pc => {
-    pc.getSenders().forEach(sender => {
-      if (sender.track && sender.track.kind === "audio") pc.removeTrack(sender);
-    });
-  });
-  setMicOn(false);
-} else {
-  // 마이크 다시 켜기
-  localStreamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
-  localAudio.current.srcObject = localStreamRef.current;
-
-  // 새 트랙을 각 PeerConnection에 추가
-  Object.values(pcs.current).forEach(pc => {
-    localStreamRef.current.getTracks().forEach(track => pc.addTrack(track, localStreamRef.current));
-  });
-  setMicOn(true);
-}
-
-};
-
-return ( <div className="voice-page"> <div className="voice-sidebar"> <h3>참여자</h3> <div className="voice-participants">
-{Object.entries(participants).map(([id, name]) => ( <div className="member" key={id}> <div className="avatar" /> <div className="meta"> <span className="name">{name}</span> <span className="role">{id === socket.id ? "You" : "Member"}</span> </div>
-{!micOn && id === socket.id && <span className="muted">Muted</span>} </div>
-))} </div>
-<button className="leave-btn" onClick={() => window.location.reload()}>나가기</button> </div>
-
-  <div className="voice-main">
-    <h2 className="title">그룹 음성 채팅</h2>
-    <div className="voice-controls">
-      <button className={`mic-btn ${!micOn ? "off" : ""}`} onClick={toggleMic}>
-        {micOn ? "🎤 On" : "🎤 Off"}
-      </button>
+      <div className="voice-main">
+        <h2>그룹 음성 채팅</h2>
+        <button className={`mic-btn ${!micOn ? "muted" : ""}`} onClick={toggleMic}>
+          {micOn ? "🎤 Mic On" : "🔇 Mic Off"}
+        </button>
+        <audio ref={localAudio} autoPlay muted />
+      </div>
     </div>
-    <audio ref={localAudio} autoPlay muted />
-  </div>
-</div>
-
-);
+  );
 }

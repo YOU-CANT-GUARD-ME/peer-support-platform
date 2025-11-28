@@ -21,8 +21,8 @@ const __dirname = path.dirname(__filename);
 // CORS SETUP
 // --------------------------------------------------
 const allowedOrigins = [
-  "http://localhost:5173",                             // Local dev
-  "https://digitechrecoverycentor.vercel.app"          // Your real Vercel frontend
+  "http://localhost:5173",
+  "https://digitechrecoverycentor.vercel.app",
 ];
 
 app.use(
@@ -47,6 +47,7 @@ mongoose
 // --------------------------------------------------
 // API ROUTES
 // --------------------------------------------------
+<<<<<<< HEAD
 
 // Posts routes
 // Create Post
@@ -59,6 +60,11 @@ app.post("/api/posts", async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: "Post creation failed", error: err.message });
   }
+=======
+app.get("/api/posts", async (req, res) => {
+  const posts = await Post.find().sort({ createdAt: -1 });
+  res.json(posts);
+>>>>>>> 2a6dd370fbb1d0f44363794dc73fdf18499e8ac4
 });
 
 // Delete Post
@@ -73,6 +79,7 @@ app.delete("/api/posts/:id", async (req, res) => {
   res.json({ message: "Post deleted" });
 });
 
+<<<<<<< HEAD
 // Me Too
 app.post("/api/posts/:id/me-too", async (req, res) => {
   const { userId } = req.body;
@@ -105,6 +112,8 @@ app.post("/api/posts/:id/comments", async (req, res) => {
 
 
 // Support Group routes
+=======
+>>>>>>> 2a6dd370fbb1d0f44363794dc73fdf18499e8ac4
 app.get("/api/groups", async (req, res) => {
   const groups = await SupportGroup.find().sort({ createdAt: -1 });
   res.json(groups);
@@ -136,7 +145,6 @@ app.get("/api/groups/my", async (req, res) => {
   res.json(groups);
 });
 
-// Diary routes
 app.get("/api/diary", async (req, res) => {
   const entries = await Diary.find().sort({ createdAt: -1 });
   res.json(entries);
@@ -159,10 +167,9 @@ app.delete("/api/diary/:id", async (req, res) => {
 });
 
 // --------------------------------------------------
-// SOCKET.IO
+// SOCKET.IO (VOICE CHAT)
 // --------------------------------------------------
 const server = http.createServer(app);
-
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
@@ -170,42 +177,74 @@ const io = new Server(server, {
   },
 });
 
-const rooms = {};
+const rooms = {}; // roomId => Map(socket.id => nickname)
 
 io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
 
-  socket.on("join-room", (roomId) => {
+  socket.on("join-room", ({ roomId, nickname }) => {
     socket.join(roomId);
-    if (!rooms[roomId]) rooms[roomId] = new Set();
-    rooms[roomId].add(socket.id);
+    socket.nickname = nickname;
 
-    const users = Array.from(rooms[roomId]).filter((id) => id !== socket.id);
+    if (!rooms[roomId]) rooms[roomId] = new Map();
+    rooms[roomId].set(socket.id, nickname);
+
+    // Send current users to the new user
+    const users = Array.from(rooms[roomId]).map(([id, name]) => ({
+      id,
+      nickname: name,
+    }));
     socket.emit("room-users", users);
-    socket.to(roomId).emit("user-joined", socket.id);
+
+    // Notify others
+    socket.to(roomId).emit("user-joined", { id: socket.id, nickname });
   });
 
-  socket.on("leave-room", (roomId) => {
-    socket.leave(roomId);
+  socket.on("leave-room", ({ roomId }) => {
     if (rooms[roomId]) {
       rooms[roomId].delete(socket.id);
-      socket.to(roomId).emit("user-left", socket.id);
+      socket.to(roomId).emit("user-left", { id: socket.id });
     }
+    socket.leave(roomId);
   });
 
-  socket.on("offer", ({ to, offer }) => io.to(to).emit("offer", { from: socket.id, offer }));
-  socket.on("answer", ({ to, answer }) => io.to(to).emit("answer", { from: socket.id, answer }));
+  socket.on("offer", ({ to, offer }) =>
+    io.to(to).emit("offer", { from: socket.id, offer })
+  );
+
+  socket.on("answer", ({ to, answer }) =>
+    io.to(to).emit("answer", { from: socket.id, answer })
+  );
+
   socket.on("ice-candidate", ({ to, candidate }) =>
     io.to(to).emit("ice-candidate", { from: socket.id, candidate })
   );
 
   socket.on("disconnecting", () => {
-    const socketRooms = Array.from(socket.rooms).filter((r) => r !== socket.id);
-    socketRooms.forEach((roomId) => {
+    for (const roomId of socket.rooms) {
       if (rooms[roomId]) {
         rooms[roomId].delete(socket.id);
-        socket.to(roomId).emit("user-left", socket.id);
+        socket.to(roomId).emit("user-left", { id: socket.id });
       }
-    });
+    }
   });
 });
+<<<<<<< HEAD
+=======
+
+// --------------------------------------------------
+// Serve Frontend (Optional)
+// --------------------------------------------------
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/dist", "index.html"));
+});
+
+// --------------------------------------------------
+// START SERVER
+// --------------------------------------------------
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
+  console.log(`Server + Socket.IO running on port ${PORT}`);
+});
+>>>>>>> 2a6dd370fbb1d0f44363794dc73fdf18499e8ac4

@@ -172,7 +172,7 @@ export default function Group() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: "easeOut" }}
         >
-          Welcome to Support group
+          Welcome to Group Community
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 15 }}
