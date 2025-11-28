@@ -22,17 +22,17 @@ export default function Navbar() {
         </Link>
 
         <ul className="nav-links">
-          <li><Link to="/community">커뮤니티</Link></li>
-          <li><Link to="/group">그룹</Link></li>
-          <li><Link to="/diary">다이어리</Link></li>
-          <li><Link to="/counsel">상담 신청</Link></li>
+          <Link to="/community">커뮤니티</Link>
+          <Link to="/group">그룹</Link>
+          <Link to="/diary">다이어리</Link>
+          <Link to="/counsel">상담 신청</Link>
 
           {isLoggedIn ? (
             <li onClick={() => setOpenModal(true)} className="user-info">
               {user?.name}님 환영합니다!
             </li>
           ) : (
-            <li><Link to="/signin">로그인</Link></li>
+            <Link to="/signin">로그인</Link>
           )}
         </ul>
       </nav>

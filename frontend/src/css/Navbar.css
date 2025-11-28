@@ -39,7 +39,7 @@
 }
 
 /* 개별 메뉴 */
-.navbar ul li {
+.navbar ul * {
   text-decoration: none;
   padding: 10px 18px;
   border-radius: 10px;
@@ -49,13 +49,13 @@
   font-size: 15px;
   font-weight: 500;
   color: #333;
-
+  
   cursor: pointer;
   transition: 0.25s ease;
 }
 
 /* 메뉴 hover */
-.navbar ul li:hover {
+.navbar ul *:hover {
   color: rgba(72, 149, 239, 0.85);
   box-shadow: 0 4px 12px rgba(72, 149, 239, 0.15);
   transform: translateY(-2px);

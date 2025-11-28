@@ -99,16 +99,18 @@
 .group-buttons {
     display: flex;
     gap: 10px;
+    justify-content: space-between;
 }
+
 
 .join-btn {
     text-decoration: none;
     text-align: center;
-    width: 50%;
     padding: 0.8em;
     background: #4895ef;
-    color: white;
+    color: white;   
     border: none;
+    width: 370px;
     border-radius: 6px;
     cursor: pointer;
     transition: 0.3s;
@@ -121,11 +123,11 @@
 .delete-btn {
     text-decoration: none;
     text-align: center;
-    width: 50%;
     padding: 0.8em;
     background: #e0e0e0;
     color: white;
     border: none;
+    width: 370px;   
     border-radius: 6px;
     cursor: pointer;
     transition: 0.3s;
