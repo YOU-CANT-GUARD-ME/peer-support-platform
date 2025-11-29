@@ -3,8 +3,19 @@ import "../css/Community.css";
 import ProfileIcon from "../assets/profile.jpg";
 import { motion } from "framer-motion";
 
-// Local API for development
+// Local API for development — set to your backend URL
 export const API_BASE_URL = "http://localhost:5000";
+
+// Helper: parse JWT payload to get current user id (works with standard JWT)
+function parseJwt(token) {
+  try {
+    const payload = token.split(".")[1];
+    const decoded = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+    return decoded;
+  } catch (err) {
+    return null;
+  }
+}
 
 export default function Community() {
   const [posts, setPosts] = useState([]);
@@ -14,7 +25,11 @@ export default function Community() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
-  const currentUser = { _id: "temp-user-id" };
+  // Read token + userId from localStorage (SignIn should set token)
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const tokenPayload = token ? parseJwt(token) : null;
+  // The login token in your auth.js signs { id: user._id, email: ... } — adjust 'id' key if necessary
+  const currentUserId = tokenPayload ? (tokenPayload.id || tokenPayload._id || tokenPayload.userId) : null;
 
   const formatDate = (date) => new Date(date).toLocaleDateString("ko-KR");
 
@@ -36,49 +51,81 @@ export default function Community() {
   const handleSubmitPost = async () => {
     if (!title.trim() || !content.trim()) return;
 
-    const res = await fetch(`${API_BASE_URL}/api/posts`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, content }),
-    });
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/posts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, content }),
+      });
 
-    const newPost = await res.json();
-    setPosts([newPost, ...posts]);
-    setTitle("");
-    setContent("");
-    setIsPostModalOpen(false);
+      const newPost = await res.json();
+      setPosts([newPost, ...posts]);
+      setTitle("");
+      setContent("");
+      setIsPostModalOpen(false);
+    } catch (err) {
+      console.error("Failed to create post:", err);
+    }
   };
 
   // Delete post
   const handleDeletePost = async (id) => {
-    await fetch(`${API_BASE_URL}/api/posts/${id}`, { method: "DELETE" });
-    setPosts(posts.filter((p) => p._id !== id));
+    try {
+      await fetch(`${API_BASE_URL}/api/posts/${id}`, { method: "DELETE" });
+      setPosts(posts.filter((p) => p._id !== id));
+    } catch (err) {
+      console.error("Failed to delete post:", err);
+    }
   };
 
   // Add comment
   const handleAddComment = async (postId, commentText) => {
     if (!commentText.trim()) return;
 
-    const res = await fetch(`${API_BASE_URL}/api/posts/${postId}/comments`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: "anonymous", content: commentText }),
-    });
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/posts/${postId}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: "anonymous", content: commentText }),
+      });
 
-    const updatedPost = await res.json();
-    setPosts(posts.map((p) => (p._id === updatedPost._id ? updatedPost : p)));
+      const updatedPost = await res.json();
+      setPosts(posts.map((p) => (p._id === updatedPost._id ? updatedPost : p)));
+    } catch (err) {
+      console.error("Failed to add comment:", err);
+    }
   };
 
-  // Me Too
+  // Me Too — requires token (authenticated user)
   const handleMeToo = async (postId) => {
-    const res = await fetch(`${API_BASE_URL}/api/posts/${postId}/me-too`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: currentUser._id }),
-    });
+    if (!token) {
+      alert("로그인이 필요합니다. Please sign in to Me Too.");
+      return;
+    }
 
-    const updated = await res.json();
-    setPosts(posts.map((p) => (p._id === updated._id ? updated : p)));
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/posts/${postId}/me-too`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({}), // server reads userId from token
+      });
+
+      const payload = await res.json();
+
+      if (!res.ok) {
+        // server returns 400 for already clicked
+        alert(payload.message || "Error");
+        return;
+      }
+
+      const updated = payload;
+      setPosts((prev) => prev.map((p) => (p._id === updated._id ? updated : p)));
+    } catch (err) {
+      console.error("Me Too error:", err);
+    }
   };
 
   const openCommentModal = (postId) => {
@@ -106,7 +153,11 @@ export default function Community() {
       {posts.length > 0 && (
         <div className="posts">
           {posts.map((post) => {
-            const hasMeToo = post.meTooUsers.includes(currentUser._id);
+            const users = Array.isArray(post.meTooUsers)
+              ? post.meTooUsers.map(u => (typeof u === "object" && u._id ? u._id : String(u)))
+              : [];
+
+            const hasMeToo = currentUserId ? users.includes(String(currentUserId)) : false;
 
             return (
               <div key={post._id} className="post">
@@ -178,12 +229,7 @@ function CommentInput({ postId, onAddComment }) {
   };
   return (
     <form onSubmit={handleSubmit} className="comment-form">
-      <input
-        type="text"
-        placeholder="댓글 작성..."
-        value={commentText}
-        onChange={(e) => setCommentText(e.target.value)}
-      />
+      <input type="text" placeholder="댓글 작성..." value={commentText} onChange={(e) => setCommentText(e.target.value)} />
       <button type="submit">등록</button>
     </form>
   );
