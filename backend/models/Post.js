@@ -12,23 +12,21 @@ const PostSchema = new mongoose.Schema(
         replies: [
           {
             username: String,
-            content: String
-          }
-        ]
-      }
+            content: String,
+          },
+        ],
+      },
     ],
 
-    // How many "Me Too" clicks
     meTooCount: {
       type: Number,
       default: 0,
     },
 
-    // The actual users who clicked Me Too
     meTooUsers: [
       {
-        type: String, // store a userId or username
-      }
+        type: String, // <-- FIXED: can store simple user strings
+      },
     ],
   },
   { timestamps: true }

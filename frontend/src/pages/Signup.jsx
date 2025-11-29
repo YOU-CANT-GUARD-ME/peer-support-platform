@@ -44,7 +44,7 @@ export default function SignUp() {
       }
 
       alert("회원가입 완료!");
-      navigate("/signIn");
+      navigate("/signin");
     } catch (err) {
       console.error(err);
       alert("서버 오류가 발생했습니다.");
@@ -103,7 +103,7 @@ export default function SignUp() {
         <button className="signup-btn" type="submit">
           회원가입
         </button>
-        <Link className="have-account" to="/signIn">
+        <Link className="have-account" to="/signin">
           이미 계정이 있으신가요?
         </Link>
       </form>
