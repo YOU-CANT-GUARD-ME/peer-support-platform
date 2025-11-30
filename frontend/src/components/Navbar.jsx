@@ -2,16 +2,18 @@
 import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import { UserContext } from "../contexts/UserContext";
+import { ThemeContext } from "../contexts/ThemeContext";
 import logo from "../assets/logo.png";
 import "../css/Navbar.css";
 
 export default function Navbar() {
   const { user, isLoggedIn, logout } = useContext(UserContext);
   const [openSidebar, setOpenSidebar] = useState(false);
+  const { darkMode, toggleTheme } = useContext(ThemeContext);
 
   const handleLogout = () => {
     logout();
-    setOpenSidebar(false);  
+    setOpenSidebar(false);
   };
 
   return (
@@ -38,7 +40,9 @@ export default function Navbar() {
           {isLoggedIn ? (
             <>
               <h3>{user?.name}님 환영합니다!</h3>
-              <button className="sidebar-btn">다크모드</button>
+              <button className="sidebar-btn" onClick={toggleTheme}>
+                {darkMode ? "라이트모드" : "다크모드"}
+              </button>
               <Link to="/counsel-records" className="sidebar-btn">상담 신청 기록</Link>
               <Link to="/my-group" className="sidebar-btn">마이 그룹</Link>
               <button className="sidebar-btn logout-btn" onClick={handleLogout}>로그아웃</button>
@@ -46,9 +50,11 @@ export default function Navbar() {
           ) : (
             <>
               <h3>로그인 후 이용해주세요.</h3>
-              <button className="sidebar-btn">회원가입</button>
+              <Link to='/signup' className="sidebar-btn">회원가입</Link>
               <Link to="/signin" className="sidebar-btn">로그인</Link>
-              <button className="sidebar-btn">다크모드</button>
+              <button className="sidebar-btn" onClick={toggleTheme}>
+                {darkMode ? "라이트모드" : "다크모드"}
+              </button>
             </>
           )}
         </div>

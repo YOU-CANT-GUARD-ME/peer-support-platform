@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import React, { useEffect, useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { UserContext } from "../contexts/UserContext";
 import "../css/Diary.css";
+import { motion } from "framer-motion";
 
 // Local development API
 export const API_BASE_URL = "http://localhost:5000";
@@ -9,6 +11,15 @@ export default function Diary() {
   const [entries, setEntries] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentEntry, setCurrentEntry] = useState(null);
+
+  const { isLoggedIn } = useContext(UserContext);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate("/"); // 로그인 안 돼 있으면 메인으로 강제 이동
+    }
+  }, [isLoggedIn, navigate]);
 
   const [emotion, setEmotion] = useState("");
   const [content, setContent] = useState("");
@@ -32,7 +43,14 @@ export default function Diary() {
   useEffect(() => {
     const fetchDiary = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/diary`);
+        const token = localStorage.getItem("token");
+
+        const res = await fetch(`${API_BASE_URL}/api/diary`, {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          },
+        });
+
         if (!res.ok) throw new Error("Failed to fetch diary entries");
         const data = await res.json();
 
@@ -46,6 +64,7 @@ export default function Diary() {
         console.error(err);
       }
     };
+
     fetchDiary();
   }, []);
 
@@ -54,13 +73,19 @@ export default function Diary() {
     if (!emotion || !content.trim()) return;
 
     try {
+      const token = localStorage.getItem("token");
+
       const res = await fetch(`${API_BASE_URL}/api/diary`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
         body: JSON.stringify({ emotion, content, themeId: selectedThemeId }),
       });
 
       if (!res.ok) throw new Error("Failed to save diary");
+
       const saved = await res.json();
       saved.theme = themeMap[saved.themeId] || themeMap.yellow;
 
@@ -77,8 +102,17 @@ export default function Diary() {
 
   const handleDelete = async (id) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/diary/${id}`, { method: "DELETE" });
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(`${API_BASE_URL}/api/diary/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
       if (!res.ok) throw new Error("Failed to delete entry");
+
       setEntries(entries.filter((e) => e._id !== id));
       setCurrentEntry(null);
     } catch (err) {
@@ -98,6 +132,7 @@ export default function Diary() {
         >
           Welcome to Diary page
         </motion.h1>
+
         <motion.p
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -120,7 +155,9 @@ export default function Diary() {
           >
             <div className="diary-emotion">{entry.emotion}</div>
             <div className="diary-content">{entry.content}</div>
-            <div className="diary-date">{new Date(entry.createdAt).toLocaleString("ko-KR")}</div>
+            <div className="diary-date">
+              {new Date(entry.createdAt).toLocaleString("ko-KR")}
+            </div>
           </motion.div>
         ))}
       </div>
@@ -171,11 +208,25 @@ export default function Diary() {
       {/* View Diary Modal */}
       {currentEntry && (
         <div className="modal-backdrop" onClick={() => setCurrentEntry(null)}>
-          <div className="modal themed" style={{ backgroundColor: currentEntry.theme }} onClick={(e) => e.stopPropagation()}>
-            <h3>{currentEntry.emotion} - {new Date(currentEntry.createdAt).toLocaleString("ko-KR")}</h3>
+          <div
+            className="modal themed"
+            style={{ backgroundColor: currentEntry.theme }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>
+              {currentEntry.emotion} -{" "}
+              {new Date(currentEntry.createdAt).toLocaleString("ko-KR")}
+            </h3>
+
             <p>{currentEntry.content}</p>
+
             <div className="modal-buttons">
-              <button onClick={() => handleDelete(currentEntry._id)} style={{ background: "red", color: "white" }}>삭제</button>
+              <button
+                onClick={() => handleDelete(currentEntry._id)}
+                style={{ background: "red", color: "white" }}
+              >
+                삭제
+              </button>
               <button onClick={() => setCurrentEntry(null)}>닫기</button>
             </div>
           </div>

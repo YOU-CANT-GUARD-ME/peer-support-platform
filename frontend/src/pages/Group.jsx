@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../css/Group.css";
+import { useNavigate } from "react-router-dom";
+import { UserContext } from "../contexts/UserContext";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
@@ -7,34 +9,35 @@ import { Link } from "react-router-dom";
 const API_BASE_URL = "http://localhost:5000";
 
 /* ---------------------------
-   그룹 생성 모달
+그룹 생성 모달
 ---------------------------- */
 function GroupModal({ setIsModalOpen, onGroupCreated }) {
   const [name, setName] = useState("");
   const [limit, setLimit] = useState("");
   const [category, setCategory] = useState("");
   const [desc, setDesc] = useState("");
-
+  
+  
   const categoryOptions = ["학업", "연애", "진로", "친구", "가족"];
-
+  
   const handleCreate = async () => {
     if (!name.trim() || !limit.trim() || !category.trim() || !desc.trim()) return;
-
+    
     const newGroup = { name, limit, category, desc };
-
+    
     try {
       const res = await fetch(`${API_BASE_URL}/api/groups`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newGroup),
       });
-
+      
       const data = await res.json();
-
+      
       if (res.ok) {
         onGroupCreated(data);
         setIsModalOpen(false);
-
+        
         setName("");
         setLimit("");
         setCategory("");
@@ -46,7 +49,7 @@ function GroupModal({ setIsModalOpen, onGroupCreated }) {
       console.error("Error creating group:", err);
     }
   };
-
+  
   return (
     <div className="modal-backdrop" onClick={() => setIsModalOpen(false)}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -64,15 +67,15 @@ function GroupModal({ setIsModalOpen, onGroupCreated }) {
           placeholder="인원 제한"
           value={limit}
           onChange={(e) => setLimit(e.target.value)}
-        />
+          />
 
         <h4>카테고리 선택</h4>
         <div className="category-selector">
           {categoryOptions.map((c) => (
             <button
-              key={c}
-              className={category === c ? "selected-category" : ""}
-              onClick={() => setCategory(c)}
+            key={c}
+            className={category === c ? "selected-category" : ""}
+            onClick={() => setCategory(c)}
             >
               {c}
             </button>
@@ -83,7 +86,7 @@ function GroupModal({ setIsModalOpen, onGroupCreated }) {
           placeholder="그룹 설명을 입력하세요"
           value={desc}
           onChange={(e) => setDesc(e.target.value)}
-        />
+          />
 
         <div className="modal-buttons">
           <button onClick={() => setIsModalOpen(false)}>취소</button>
@@ -95,7 +98,7 @@ function GroupModal({ setIsModalOpen, onGroupCreated }) {
 }
 
 /* ---------------------------
-   그룹 목록 UI
+그룹 목록 UI
 ---------------------------- */
 function GroupList({ groups, onDelete }) {
   return (
@@ -129,33 +132,34 @@ function GroupList({ groups, onDelete }) {
 
 /* ---------------------------
    메인 Group 페이지
----------------------------- */
+   ---------------------------- */
 export default function Group() {
   const [groups, setGroups] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  
   // 그룹 목록 가져오기
   const fetchGroups = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/groups`);
       const data = await res.json();
+
       setGroups(data);
     } catch (err) {
       console.error("Error fetching groups:", err);
     }
   };
-
+  
   useEffect(() => {
     fetchGroups();
   }, []);
-
+  
   const handleGroupCreated = (newGroup) => {
     setGroups([newGroup, ...groups]);
   };
-
+  
   const handleDelete = async (id) => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
-
+    
     const res = await fetch(`${API_BASE_URL}/api/groups/${id}`, {
       method: "DELETE",
     });
@@ -167,7 +171,7 @@ export default function Group() {
 
   return (
     <div className="groups-page">
-      
+
       <div className="welcome-box">
         <motion.h1
           initial={{ opacity: 0, y: 15 }}

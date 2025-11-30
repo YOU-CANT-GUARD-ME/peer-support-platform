@@ -3,7 +3,7 @@
     justify-content: center;
     align-items: center;
     min-height: calc(100vh - 70px);
-    background: #f7f8fa;
+    /* background: #f7f8fa; */
     padding: 20px;
 }
 
@@ -24,6 +24,7 @@
 
 .signup-box {
     background: white;
+    color: black;
     padding: 32px;
     border-radius: 18px;
     width: 100%;
@@ -40,7 +41,6 @@
     font-weight: 700;
     text-align: center;
     margin-bottom: 10px;
-    color: #333;
 }
 
 .input-group {
@@ -52,16 +52,8 @@
 
 .input-group label {
     font-size: 14px;
-    color: #444;
 }
 
-.input-group input {
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    font-size: 15px;
-    transition: 0.2s;
-}
 
 .input-group input:focus {
     border-color: #0077cc;
@@ -84,6 +76,22 @@
 .signup-btn:hover {
     background: #0073c5;
 }
+
+.signup-title,
+.input-group label {
+    color: #222; /* 또는 기존 #333/#444 */
+}
+
+.input-group input {
+    padding: 12px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    color: #000;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: 0.2s;
+}
+
 
 .back-btn {
     background: #e9ecef;

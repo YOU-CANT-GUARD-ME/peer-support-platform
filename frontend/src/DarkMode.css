@@ -1,0 +1,198 @@
+/* =============================== */
+/* 커뮤니티 페이지 다크모드 CSS */
+/* =============================== */
+body.dark {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+/* 전체 페이지 */
+body.dark .community-page {
+    background-color: #121212;
+}
+
+body.dark .welcome-text {
+    color: #4895ef;
+}
+
+/* 게시글 리스트 */
+body.dark .posts {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+/* 개별 게시글 카드 */
+body.dark .post {
+    background: #1e1e1e;
+    border: 1px solid #333;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    color: #e0e0e0;
+}
+
+body.dark .post:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8);
+}
+
+/* 글 상단 프로필 */
+body.dark .post-header {
+    color: #aaa;
+}
+
+body.dark .profile-icon {
+    border: 1px solid #555;
+}
+
+/* 제목 */
+body.dark .post h2 {
+    color: #fff;
+}
+
+/* 내용 */
+body.dark .post p {
+    color: #ccc;
+}
+
+/* 글 하단 버튼 */
+body.dark .post-actions button {
+    border: 1px solid #555;
+    background: #2a2a2a;
+    color: #e0e0e0;
+}
+
+body.dark .post-actions button:nth-child(1) {
+    background-color: #4895ef;
+    color: #fff;
+}
+
+body.dark .post-actions button:nth-child(1):hover {
+    background-color: #3b7bd3;
+}
+
+body.dark .post-actions button:hover {
+    background: #3a3a3a;
+}
+
+/* 글쓰기 플로팅 버튼 */
+body.dark .post-btn {
+    background: #4895ef;
+    color: #fff;
+}
+
+body.dark .post-btn:hover {
+    background: #3b7bd3;
+}
+
+/* 모달 배경 */
+body.dark .modal-backdrop {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+/* 모달 */
+body.dark .modal {
+    background: #1e1e1e;
+    color: #e0e0e0;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+}
+
+/* 제목 input + 내용 textarea */
+body.dark .modal input,
+body.dark .modal textarea {
+    background: #2a2a2a;
+    color: #e0e0e0;
+    border: 1px solid #555;
+}
+
+body.dark .modal input:focus,
+body.dark .modal textarea:focus {
+    border-color: #4895ef;
+    box-shadow: 0 0 0 3px rgba(72, 149, 239, 0.25);
+}
+
+/* 모달 버튼 */
+body.dark .modal-buttons button:first-child {
+    background: #444;
+    color: #ccc;
+}
+
+body.dark .modal-buttons button:first-child:hover {
+    background: #555;
+}
+
+body.dark .modal-buttons button:last-child {
+    background: #4895ef;
+    color: #fff;
+}
+
+body.dark .modal-buttons button:last-child:hover {
+    background: #3b7bd3;
+}
+
+/* 아코 상담 */
+
+body.dark .ako-info-box {
+    background: #1e1e1e !important;
+    border: 1px solid #333;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    color: #e0e0e0;
+}
+
+
+
+/* 로그인 */
+
+body.dark .signup-box {
+    background: #1e1e1e !important;
+    border: 1px solid #333;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    color: #e0e0e0;
+}
+
+body.dark .signup-title,
+body.dark .input-group label {
+    color: #fff;
+}
+
+body.dark .input-group input {
+    background-color: #333;
+    border: 1px solid #000;
+    color: #e0e0e0;
+}
+
+
+/* 댓글 모달 */
+body.dark .coment-modal {
+    background: #1e1e1e;
+    color: #e0e0e0;
+}
+
+/* 댓글 리스트 */
+body.dark .comments-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+body.dark .comment {
+    background: #2a2a2a;
+    color: #ccc;
+}
+
+body.dark .comment span {
+    color: #aaa;
+}
+
+/* 댓글 입력 폼 */
+body.dark .comment-form input {
+    background: #2a2a2a;
+    color: #e0e0e0;
+    border: 1px solid #555;
+}
+
+body.dark .comment-form button {
+    background: #4895ef;
+    color: #fff;
+}
+
+body.dark .comment-form button:hover {
+    background: #3b7bd3;
+}
