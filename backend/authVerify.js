@@ -1,12 +1,10 @@
+// authVerify.js
 import express from "express";
 import EmailVerification from "./models/EmailVerification.js";
 
 export default function createAuthVerifyRoutes(transporter) {
   const router = express.Router();
 
-  // ---------------------------
-  // 학교 이메일 체크
-  // ---------------------------
   function isAllowedDomain(email) {
     return email.endsWith("@sdh.hs.kr");
   }
@@ -22,14 +20,12 @@ export default function createAuthVerifyRoutes(transporter) {
 
       const code = String(Math.floor(100000 + Math.random() * 900000));
 
-      // DB에 저장
       await EmailVerification.findOneAndUpdate(
         { email },
-        { code, createdAt: new Date() },
+        { code, verified: false, createdAt: new Date() },
         { upsert: true, new: true }
       );
 
-      // 메일 발송
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
         to: email,
@@ -38,7 +34,6 @@ export default function createAuthVerifyRoutes(transporter) {
       });
 
       res.json({ message: "인증코드 발송 완료" });
-
     } catch (err) {
       console.error("Send code error:", err);
       res.status(500).json({ message: "메일 발송 실패", error: err.message });
@@ -46,7 +41,7 @@ export default function createAuthVerifyRoutes(transporter) {
   });
 
   // ---------------------------
-  // 인증코드 검증
+  // 인증코드 검증 (verified=true 저장)
   // ---------------------------
   router.post("/verify-code", async (req, res) => {
     try {
@@ -58,7 +53,10 @@ export default function createAuthVerifyRoutes(transporter) {
 
       if (record.code !== code) return res.status(400).json({ message: "인증코드 불일치" });
 
-      res.json({ message: "이메일 인증 성공" });
+      record.verified = true;
+      await record.save();
+
+      res.json({ message: "이메일 인증 성공", verified: true });
 
     } catch (err) {
       console.error("Verify code error:", err);
