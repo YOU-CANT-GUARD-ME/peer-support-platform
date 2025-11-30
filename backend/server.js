@@ -9,10 +9,14 @@ import { fileURLToPath } from "url";
 import Post from "./models/Post.js";
 import Diary from "./models/Diary.js";
 import SupportGroup from "./models/supportGroup.js";
+import ChatMessage from "./models/ChatMessage.js";
 
 import authRoutes from "./auth.js";
 import createAuthVerifyRoutes from "./authVerify.js";
 import nodemailer from "nodemailer";
+
+import { createServer } from "http";
+import { Server as SocketIOServer } from "socket.io";
 
 dotenv.config();
 
@@ -22,12 +26,25 @@ const __dirname = path.dirname(__filename);
 
 // ⭐ EMAIL VERIFICATION
 const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS,
-    },
+  service: "gmail",
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
+  },
 });
+
+// ⭐ HTTPS
+
+const httpServer = createServer(app);
+const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: "http://localhost:5173", // React 개발 서버 주소
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
+
+const rooms = {}; // { roomId: [nickname1, nickname2, ...]
 
 // ⭐ MIDDLEWARE
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
@@ -204,6 +221,83 @@ app.delete("/api/groups/:id", requireAuth, async (req, res) => {
     }
 });
 
+////
+// ⭐⭐⭐ SOCKET.IO REAL-TIME CHAT ⭐⭐⭐
+//
+
+const chatRooms = {}; // { roomId: [{ id: socket.id, nickname }] }
+
+io.on("connection", (socket) => {
+  console.log("Socket connected:", socket.id);
+
+  // 방 참여
+  socket.on("join-room", async ({ roomId, nickname }) => {
+    socket.join(roomId);
+
+    // DB에서 기존 메시지 불러오기
+    const messages = await ChatMessage.find({ roomId }).sort({ createdAt: 1 });
+    socket.emit(
+      "chat-message-history",
+      messages.map((m) => ({
+        nickname: m.nickname,
+        text: m.text,
+        time: m.time || m.createdAt.toLocaleTimeString(),
+        _id: m._id,
+      }))
+    );
+
+    // 참가자 등록
+    if (!chatRooms[roomId]) chatRooms[roomId] = [];
+    if (!chatRooms[roomId].some((p) => p.id === socket.id))
+      chatRooms[roomId].push({ id: socket.id, nickname });
+
+    // 참가자 목록 브로드캐스트
+    io.to(roomId).emit("room-users", chatRooms[roomId].map((p) => p.nickname));
+    io.to(roomId).emit("user-joined", nickname);
+  });
+
+  // 채팅 메시지 수신
+  socket.on("chat-message", async ({ roomId, message }) => {
+    // DB에 저장
+    const msg = new ChatMessage({
+      roomId,
+      ...message,
+      time: message.time || new Date().toLocaleTimeString(),
+    });
+    await msg.save();
+
+    // 방에 브로드캐스트
+    io.to(roomId).emit("chat-message", {
+      nickname: msg.nickname,
+      text: msg.text,
+      time: msg.time,
+      _id: msg._id,
+    });
+  });
+
+  // 방 나가기
+  socket.on("leave-room", (roomId) => {
+    socket.leave(roomId);
+    if (chatRooms[roomId]) {
+      const participant = chatRooms[roomId].find((p) => p.id === socket.id);
+      chatRooms[roomId] = chatRooms[roomId].filter((p) => p.id !== socket.id);
+      io.to(roomId).emit("room-users", chatRooms[roomId].map((p) => p.nickname));
+      if (participant) io.to(roomId).emit("user-left", participant.nickname);
+    }
+  });
+
+  // 연결 종료
+  socket.on("disconnect", () => {
+    console.log("Socket disconnected:", socket.id);
+    for (const roomId in chatRooms) {
+      const participant = chatRooms[roomId].find((p) => p.id === socket.id);
+      chatRooms[roomId] = chatRooms[roomId].filter((p) => p.id !== socket.id);
+      io.to(roomId).emit("room-users", chatRooms[roomId].map((p) => p.nickname));
+      if (participant) io.to(roomId).emit("user-left", participant.nickname);
+    }
+  });
+});
+
 //
 // ⭐⭐⭐ FRONTEND SERVING ⭐⭐⭐
 //
@@ -218,6 +312,9 @@ app.get("*", (req, res) => {
 
 // ⭐ START SERVER
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () =>
+// app.listen(PORT, () =>
+//     console.log(`Server running at http://localhost:${PORT}`)
+// );
+httpServer.listen(PORT, () =>
     console.log(`Server running at http://localhost:${PORT}`)
 );

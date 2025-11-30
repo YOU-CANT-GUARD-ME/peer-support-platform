@@ -77,14 +77,14 @@ export default function MyGroup() {
           >
             채팅방 가기
           </button>
-
+{/* 
           <button
             className="goto-voice btn"
             disabled={!nickname}
             onClick={() => navigate("/my-group/voice")}
           >
             음성채팅방 가기
-          </button>
+          </button> */}
         </div>
 
         <div className="mygroup-info-box">

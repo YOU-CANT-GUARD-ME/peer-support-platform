@@ -18,7 +18,7 @@ import MyGroup from "./pages/MyGroup";
 import Diary from "./pages/Diary";
 import Counsel from "./pages/Counsel";
 import MyGroupChat from "./pages/MyGroupChat";
-import MyGroupVoicePage from "./pages/MyGroupVoice";
+// import MyGroupVoicePage from "./pages/MyGroupVoice";
 
 import './DarkMode.css'
 
@@ -51,7 +51,7 @@ export default function App() {
               <Route path="/my-group/chat" element={<MyGroupChat />} />
 
               {/* 🔹 마이그룹 > 음성 채팅 */}
-              <Route path="/my-group/voice" element={<MyGroupVoicePage />} />
+              {/* <Route path="/my-group/voice" element={<MyGroupVoicePage />} /> */}
 
               {/* 다이어리 / 상담 */}
               <Route path="/diary" element={<Diary />} />
