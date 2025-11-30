@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
-import { UserContext } from "../contexts/UserContext";
+// import { useNavigate } from "react-router-dom";
+// import { UserContext } from "../contexts/UserContext";
 import "../css/Diary.css";
 import { motion } from "framer-motion";
 
@@ -11,15 +11,6 @@ export default function Diary() {
   const [entries, setEntries] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentEntry, setCurrentEntry] = useState(null);
-
-  const { isLoggedIn } = useContext(UserContext);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!isLoggedIn) {
-      navigate("/"); // 로그인 안 돼 있으면 메인으로 강제 이동
-    }
-  }, [isLoggedIn, navigate]);
 
   const [emotion, setEmotion] = useState("");
   const [content, setContent] = useState("");
