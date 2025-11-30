@@ -248,12 +248,13 @@ io.on("connection", (socket) => {
 
     // 참가자 등록
     if (!chatRooms[roomId]) chatRooms[roomId] = [];
-    if (!chatRooms[roomId].some((p) => p.id === socket.id))
+    if (!chatRooms[roomId].some((p) => p.id === socket.id)) {
       chatRooms[roomId].push({ id: socket.id, nickname });
+    }
 
     // 참가자 목록 브로드캐스트
-    io.to(roomId).emit("room-users", chatRooms[roomId].map((p) => p.nickname));
-    io.to(roomId).emit("user-joined", nickname);
+    io.to(roomId).emit("room-users", chatRooms[roomId]);
+    io.to(roomId).emit("user-joined", { id: socket.id, nickname });
   });
 
   // 채팅 메시지 수신
@@ -281,8 +282,8 @@ io.on("connection", (socket) => {
     if (chatRooms[roomId]) {
       const participant = chatRooms[roomId].find((p) => p.id === socket.id);
       chatRooms[roomId] = chatRooms[roomId].filter((p) => p.id !== socket.id);
-      io.to(roomId).emit("room-users", chatRooms[roomId].map((p) => p.nickname));
-      if (participant) io.to(roomId).emit("user-left", participant.nickname);
+      io.to(roomId).emit("room-users", chatRooms[roomId]);
+      if (participant) io.to(roomId).emit("user-left", { id: participant.id, nickname: participant.nickname });
     }
   });
 
@@ -292,11 +293,12 @@ io.on("connection", (socket) => {
     for (const roomId in chatRooms) {
       const participant = chatRooms[roomId].find((p) => p.id === socket.id);
       chatRooms[roomId] = chatRooms[roomId].filter((p) => p.id !== socket.id);
-      io.to(roomId).emit("room-users", chatRooms[roomId].map((p) => p.nickname));
-      if (participant) io.to(roomId).emit("user-left", participant.nickname);
+      io.to(roomId).emit("room-users", chatRooms[roomId]);
+      if (participant) io.to(roomId).emit("user-left", { id: participant.id, nickname: participant.nickname });
     }
   });
 });
+
 
 //
 // ⭐⭐⭐ FRONTEND SERVING ⭐⭐⭐
