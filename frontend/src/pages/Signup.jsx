@@ -205,4 +205,8 @@ export default function SignUp() {
       </form>
     </div>
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> a361d6b80dc9c849bf133b1d3961561897f31e73

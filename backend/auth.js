@@ -95,6 +95,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 // ----------------- AUTH MIDDLEWARE -----------------
 export async function authMiddleware(req, res, next) {
   const token = req.headers.authorization?.split(" ")[1];
@@ -120,4 +121,6 @@ export async function authMiddleware(req, res, next) {
 }
 
 
+=======
+>>>>>>> a361d6b80dc9c849bf133b1d3961561897f31e73
 export default router;

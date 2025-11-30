@@ -220,4 +220,8 @@ app.get("*", (req, res) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
     console.log(`Server running at http://localhost:${PORT}`)
+<<<<<<< HEAD
 );
+=======
+);
+>>>>>>> a361d6b80dc9c849bf133b1d3961561897f31e73
