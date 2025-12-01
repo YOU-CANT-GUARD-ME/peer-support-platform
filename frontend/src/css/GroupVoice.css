@@ -1,0 +1,154 @@
+/* ----------------------
+Group Voice Page Styles
+-----------------------*/
+
+/* 전체 레이아웃 (왼쪽 사이드 / 음성영역 / 오른쪽 참여자) */
+.voice-page {
+display: grid;
+grid-template-columns: 260px 1fr 260px;
+gap: 20px;
+padding: 24px;
+background: #f7f8fb;
+min-height: calc(100vh - 80px);
+box-sizing: border-box;
+font-family: 'Segoe UI', sans-serif;
+}
+
+/* 카드 공통 */
+.voice-sidebar,
+.voice-main,
+.voice-participants {
+background: #fff;
+border-radius: 12px;
+padding: 18px;
+box-shadow: 0 6px 16px rgba(12, 20, 40, 0.06);
+}
+
+/* 왼쪽 사이드바 */
+.voice-sidebar h3 {
+margin-bottom: 12px;
+font-size: 18px;
+font-weight: 600;
+color: #172b4d;
+}
+.voice-sidebar .leave-btn {
+margin-top: 20px;
+padding: 10px 16px;
+border-radius: 8px;
+border: none;
+background: #ef4444;
+color: #fff;
+font-weight: bold;
+cursor: pointer;
+transition: background 0.2s;
+}
+.voice-sidebar .leave-btn:hover { background: #dc2626; }
+
+/* 메인 음성 영역 */
+.voice-main {
+display: flex;
+flex-direction: column;
+gap: 18px;
+align-items: center;
+justify-content: center;
+height: calc(100vh - 160px);
+}
+
+/* 타이틀 */
+.voice-main .title {
+font-size: 22px;
+color: #093a8c;
+font-weight: 700;
+}
+
+/* 큰 마이크 버튼 */
+.voice-controls {
+display: flex;
+gap: 14px;
+align-items: center;
+}
+.mic-btn {
+width: 92px;
+height: 92px;
+border-radius: 50%;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+font-size: 28px;
+background: linear-gradient(180deg,#ff6b6b,#ff3b3b);
+color: #fff;
+border: none;
+box-shadow: 0 10px 30px rgba(255,59,59,0.18);
+cursor: pointer;
+transition: transform .12s, background .2s;
+}
+.mic-btn:hover { transform: translateY(-3px); }
+.mic-btn.off {
+background: linear-gradient(180deg,#f0f0f0,#dcdcdc);
+color: #555;
+box-shadow: none;
+}
+
+/* 소규모 컨트롤(볼륨/음소거 등) */
+.small-controls {
+display: flex;
+gap: 10px;
+align-items: center;
+}
+.small-controls button {
+padding: 8px 12px;
+border-radius: 8px;
+border: none;
+background: #eef2ff;
+color: #1f4ed8;
+cursor: pointer;
+transition: background 0.2s;
+}
+.small-controls button:hover { background: #dbeafe; }
+
+/* 참가자 리스트 (오른쪽) */
+.voice-participants .member {
+display: flex;
+gap: 12px;
+align-items: center;
+padding: 8px;
+border-radius: 10px;
+transition: background 0.2s, border-left 0.2s;
+}
+.voice-participants .member .avatar {
+width: 40px;
+height: 40px;
+border-radius: 50%;
+object-fit: cover;
+border: 2px solid #fff;
+box-shadow: 0 2px 8px rgba(10,20,50,0.06);
+}
+.voice-participants .member .meta {
+display: flex;
+flex-direction: column;
+}
+.voice-participants .member .name {
+font-weight: 700;
+color: #172b4d;
+}
+.voice-participants .member .role {
+font-size: 12px;
+color: #6b7280;
+}
+
+/* 발언중 표시 */
+.member.talking {
+background: linear-gradient(90deg, rgba(77,124,255,0.06), rgba(255,255,255,0.02));
+border-left: 4px solid #4d7cff;
+}
+
+/* 반응형 */
+@media (max-width: 980px) {
+.voice-page {
+grid-template-columns: 1fr;
+padding: 16px;
+}
+.voice-participants { order: 3; margin-top: 12px; }
+.voice-sidebar { order: 1; margin-bottom: 12px; }
+.voice-main { order: 2; height: auto; }
+}
