@@ -181,46 +181,105 @@ app.delete("/api/diary/:id", requireAuth, async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
-
 // ---------------------------
 // SUPPORT GROUPS
 // ---------------------------
+
+// 그룹 전체 가져오기
 app.get("/api/groups", async (req, res) => {
-    try {
-        const groups = await SupportGroup.find();
-        res.json(groups);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
+  try {
+    const groups = await SupportGroup.find();
+    res.json(groups);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
+// 그룹 생성 (로그인 필요)
 app.post("/api/groups", requireAuth, async (req, res) => {
-    try {
-        const group = new SupportGroup(req.body);
-        await group.save();
-        res.status(201).json(group);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
+  try {
+    const group = new SupportGroup({
+      ...req.body,
+      members: 0,
+      creator: req.userId   // 생성자 정보 저장
+    });
+
+    await group.save();
+    res.status(201).json(group);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-// ⭐ DELETE GROUP
+// 그룹 삭제 (생성자만 삭제 가능)
 app.delete("/api/groups/:id", requireAuth, async (req, res) => {
-    try {
-        const deleted = await SupportGroup.findOneAndDelete({
-            _id: req.params.id,
-            userId: req.userId,
-        });
+  try {
+    const deleted = await SupportGroup.findOneAndDelete({
+      _id: req.params.id,
+      creator: req.userId,
+    });
 
-        if (!deleted)
-            return res.status(404).json({ message: "Group not found or unauthorized" });
+    if (!deleted)
+      return res
+        .status(404)
+        .json({ message: "Group not found or unauthorized" });
 
-        res.json({ message: "Group deleted" });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
+    res.json({ message: "Group deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
+// =========================================
+// 🚀 추가되는 핵심 API 1: 유저가 가입한 그룹 조회
+// =========================================
+app.get("/api/my-group", requireAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).populate("joinedGroup");
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json({ joinedGroup: user.joinedGroup });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// =========================================
+// 🚀 추가되는 핵심 API 2: 그룹 가입
+// =========================================
+app.post("/api/groups/:id/join", requireAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    const groupId = req.params.id;
+
+    // 이미 가입한 그룹이 있는지 체크
+    if (user.joinedGroup) {
+      return res
+        .status(400)
+        .json({ message: "이미 다른 그룹에 가입되어 있습니다." });
+    }
+
+    const group = await SupportGroup.findById(groupId);
+    if (!group) return res.status(404).json({ message: "그룹을 찾을 수 없습니다." });
+
+    // 인원 제한 검사
+    if (group.members >= group.limit) {
+      return res.status(400).json({ message: "그룹 인원이 가득 찼습니다." });
+    }
+
+    // 가입 처리
+    user.joinedGroup = groupId;
+    await user.save();
+
+    group.members += 1;
+    await group.save();
+
+    res.json({ message: "그룹 가입 완료", group });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 ////
 // ⭐⭐⭐ SOCKET.IO REAL-TIME CHAT ⭐⭐⭐
 //

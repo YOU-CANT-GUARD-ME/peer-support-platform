@@ -5,6 +5,14 @@ const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, unique: true, required: true },
     password: { type: String, required: true },
+
+    // ⭐ 유저가 가입한 그룹 (1개만 가입 가능)
+    joinedGroup: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "SupportGroup",
+        default: null
+    },
+
 }, { timestamps: true });
 
 // Hash password before saving
