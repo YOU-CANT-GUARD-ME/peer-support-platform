@@ -9,7 +9,10 @@ import { fileURLToPath } from "url";
 
 import Post from "./models/Post.js";
 import Diary from "./models/Diary.js";
+
+// FIX: Correct filename casing
 import SupportGroup from "./models/supportGroup.js";
+
 import ChatMessage from "./models/ChatMessage.js";
 
 import authRoutes from "./auth.js";
@@ -44,7 +47,7 @@ const io = new SocketIOServer(httpServer, {
   },
 });
 
-const rooms = {}; // { roomId: [nickname1, nickname2, ...]
+const rooms = {}; // { roomId: [nickname1, nickname2, ...] }
 
 // ⭐ MIDDLEWARE
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
@@ -91,16 +94,40 @@ app.get("/api/posts", async (req, res) => {
   }
 });
 
-// POST CREATION — always uses req.userId from token
+// POST CREATION
 app.post("/api/posts", requireAuth, async (req, res) => {
   try {
     const newPost = new Post({
       title: req.body.title,
       content: req.body.content,
-      userId: req.userId, // ✅ ensure userId comes from token
+      userId: req.userId,
     });
     await newPost.save();
     res.status(201).json(newPost);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ⭐⭐⭐ ADD COMMENT ROUTE WITH FIX ⭐⭐⭐
+app.post("/api/posts/:id/comments", async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    const { username, content } = req.body;
+
+    if (!content || !content.trim()) {
+      return res.status(400).json({ message: "Comment cannot be empty" });
+    }
+
+    // FIX: make sure comments array exists
+    if (!post.comments) post.comments = [];
+
+    post.comments.push({ username, content });
+    await post.save();
+
+    res.json(post);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -112,7 +139,6 @@ app.post("/api/posts/:id/metoo", requireAuth, async (req, res) => {
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ message: "Post not found" });
 
-    // ensure userId is unique
     if (post.meTooUsers.includes(req.userId)) {
       return res.status(400).json({ message: "Already MeToo" });
     }
@@ -121,7 +147,7 @@ app.post("/api/posts/:id/metoo", requireAuth, async (req, res) => {
     post.meTooCount = post.meTooUsers.length;
     await post.save();
 
-    res.json({ message: "MeToo added", post }); // return post for frontend update
+    res.json({ message: "MeToo added", post });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -132,11 +158,13 @@ app.delete("/api/posts/:id", requireAuth, async (req, res) => {
   try {
     const deleted = await Post.findOneAndDelete({
       _id: req.params.id,
-      userId: req.userId, // ✅ ensures only owner can delete
+      userId: req.userId,
     });
 
     if (!deleted)
-      return res.status(404).json({ message: "Post not found or unauthorized" });
+      return res
+        .status(404)
+        .json({ message: "Post not found or unauthorized" });
 
     res.json({ message: "Post deleted" });
   } catch (err) {
@@ -174,7 +202,9 @@ app.delete("/api/diary/:id", requireAuth, async (req, res) => {
     });
 
     if (!deleted)
-      return res.status(404).json({ message: "Entry not found or unauthorized" });
+      return res
+        .status(404)
+        .json({ message: "Entry not found or unauthorized" });
 
     res.json({ message: "Diary entry deleted" });
   } catch (err) {
@@ -196,7 +226,7 @@ app.get("/api/groups", async (req, res) => {
 
 app.post("/api/groups", requireAuth, async (req, res) => {
   try {
-    const group = new SupportGroup(req.body);
+    const group = new SupportGroup({ ...req.body, creator: req.userId });
     await group.save();
     res.status(201).json(group);
   } catch (err) {
@@ -204,11 +234,12 @@ app.post("/api/groups", requireAuth, async (req, res) => {
   }
 });
 
+
 app.delete("/api/groups/:id", requireAuth, async (req, res) => {
   try {
     const deleted = await SupportGroup.findOneAndDelete({
       _id: req.params.id,
-      userId: req.userId,
+      creator: req.userId, // check creator instead of userId
     });
 
     if (!deleted)
@@ -219,6 +250,46 @@ app.delete("/api/groups/:id", requireAuth, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+// ---------------------------
+// AUTH FIX
+// ---------------------------
+app.get("/api/auth/me", requireAuth, async (req, res) => {
+  try {
+    const User = mongoose.model("User"); // dynamically get User model
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json({ user });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// ---------------------------
+// JOIN GROUP
+// ---------------------------
+app.post("/api/groups/join", requireAuth, async (req, res) => {
+  try {
+    const { groupId, nickname } = req.body;
+    if (!groupId || !nickname)
+      return res.status(400).json({ message: "Missing groupId or nickname" });
+
+    const group = await SupportGroup.findById(groupId);
+    if (!group) return res.status(404).json({ message: "Group not found" });
+
+    if (group.members.some((m) => m.userId.toString() === req.userId))
+      return res.status(400).json({ message: "Already joined" });
+
+    group.members.push({ userId: req.userId, nickname });
+    await group.save();
+
+    res.json(group);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 
 // ⭐⭐⭐ SOCKET.IO REAL-TIME CHAT ⭐⭐⭐
 const chatRooms = {};
@@ -268,7 +339,10 @@ io.on("connection", (socket) => {
     if (chatRooms[roomId]) {
       const participant = chatRooms[roomId].find((p) => p.id === socket.id);
       chatRooms[roomId] = chatRooms[roomId].filter((p) => p.id !== socket.id);
-      io.to(roomId).emit("room-users", chatRooms[roomId].map((p) => p.nickname));
+      io.to(roomId).emit(
+        "room-users",
+        chatRooms[roomId].map((p) => p.nickname)
+      );
       if (participant) io.to(roomId).emit("user-left", participant.nickname);
     }
   });
@@ -278,13 +352,16 @@ io.on("connection", (socket) => {
     for (const roomId in chatRooms) {
       const participant = chatRooms[roomId].find((p) => p.id === socket.id);
       chatRooms[roomId] = chatRooms[roomId].filter((p) => p.id !== socket.id);
-      io.to(roomId).emit("room-users", chatRooms[roomId].map((p) => p.nickname));
+      io.to(roomId).emit(
+        "room-users",
+        chatRooms[roomId].map((p) => p.nickname)
+      );
       if (participant) io.to(roomId).emit("user-left", participant.nickname);
     }
   });
 });
 
-// ⭐⭐⭐ FRONTEND SERVING ⭐⭐⭐
+// ⭐ FRONTEND SERVING
 const frontendPath = path.join(__dirname, "../frontend/dist");
 console.log("Serving frontend from:", frontendPath);
 
@@ -296,4 +373,6 @@ app.get("*", (req, res) => {
 
 // ⭐ START SERVER
 const PORT = process.env.PORT || 5000;
-httpServer.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+httpServer.listen(PORT, () =>
+  console.log(`Server running at http://localhost:${PORT}`)
+);

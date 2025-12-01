@@ -5,6 +5,12 @@ const PostSchema = new mongoose.Schema(
     title: String,
     content: String,
 
+    // ⭐ REQUIRED FIELD — missing before
+    userId: {
+      type: String,
+      required: true,
+    },
+
     comments: [
       {
         username: String,
@@ -25,11 +31,11 @@ const PostSchema = new mongoose.Schema(
 
     meTooUsers: [
       {
-        type: String, // <-- FIXED: can store simple user strings
+        type: String, // user IDs stored as strings
       },
     ],
   },
   { timestamps: true }
 );
 
-export default mongoose.model("Post", PostSchema);  
+export default mongoose.model("Post", PostSchema);

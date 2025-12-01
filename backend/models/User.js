@@ -3,8 +3,23 @@ import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
+
     email: { type: String, unique: true, required: true },
+
     password: { type: String, required: true },
+
+    // ⭐ ADDED: nickname stored on the user account
+    nickname: {
+        type: String,
+        default: "",
+    },
+
+    // ⭐ ADDED: user can only belong to ONE group at a time
+    currentGroupId: {
+        type: String,
+        default: "",
+    },
+    
 }, { timestamps: true });
 
 // Hash password before saving
