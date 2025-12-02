@@ -9,10 +9,7 @@ import { fileURLToPath } from "url";
 
 import Post from "./models/Post.js";
 import Diary from "./models/Diary.js";
-
-// FIX: Correct filename casing
 import SupportGroup from "./models/supportGroup.js";
-
 import ChatMessage from "./models/ChatMessage.js";
 
 import authRoutes from "./auth.js";
@@ -94,7 +91,7 @@ app.get("/api/posts", async (req, res) => {
   }
 });
 
-// POST CREATION
+// CREATE POST
 app.post("/api/posts", requireAuth, async (req, res) => {
   try {
     const newPost = new Post({
@@ -109,19 +106,17 @@ app.post("/api/posts", requireAuth, async (req, res) => {
   }
 });
 
-// ⭐⭐⭐ ADD COMMENT ROUTE WITH FIX ⭐⭐⭐
+// ADD COMMENT
 app.post("/api/posts/:id/comments", async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ message: "Post not found" });
 
     const { username, content } = req.body;
-
     if (!content || !content.trim()) {
       return res.status(400).json({ message: "Comment cannot be empty" });
     }
 
-    // FIX: make sure comments array exists
     if (!post.comments) post.comments = [];
 
     post.comments.push({ username, content });
@@ -133,7 +128,7 @@ app.post("/api/posts/:id/comments", async (req, res) => {
   }
 });
 
-// MeToo
+// METOO
 app.post("/api/posts/:id/metoo", requireAuth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -215,6 +210,8 @@ app.delete("/api/diary/:id", requireAuth, async (req, res) => {
 // ---------------------------
 // SUPPORT GROUPS
 // ---------------------------
+
+// Get all groups
 app.get("/api/groups", async (req, res) => {
   try {
     const groups = await SupportGroup.find();
@@ -224,6 +221,7 @@ app.get("/api/groups", async (req, res) => {
   }
 });
 
+// Create group
 app.post("/api/groups", requireAuth, async (req, res) => {
   try {
     const group = new SupportGroup({ ...req.body, creator: req.userId });
@@ -234,16 +232,18 @@ app.post("/api/groups", requireAuth, async (req, res) => {
   }
 });
 
-
+// Delete group
 app.delete("/api/groups/:id", requireAuth, async (req, res) => {
   try {
     const deleted = await SupportGroup.findOneAndDelete({
       _id: req.params.id,
-      creator: req.userId, // check creator instead of userId
+      creator: req.userId,
     });
 
     if (!deleted)
-      return res.status(404).json({ message: "Group not found or unauthorized" });
+      return res
+        .status(404)
+        .json({ message: "Group not found or unauthorized" });
 
     res.json({ message: "Group deleted" });
   } catch (err) {
@@ -256,7 +256,7 @@ app.delete("/api/groups/:id", requireAuth, async (req, res) => {
 // ---------------------------
 app.get("/api/auth/me", requireAuth, async (req, res) => {
   try {
-    const User = mongoose.model("User"); // dynamically get User model
+    const User = mongoose.model("User");
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -267,13 +267,15 @@ app.get("/api/auth/me", requireAuth, async (req, res) => {
 });
 
 // ---------------------------
-// JOIN GROUP
+// ⭐⭐⭐ FIXED JOIN GROUP ROUTE ⭐⭐⭐
 // ---------------------------
-app.post("/api/groups/join", requireAuth, async (req, res) => {
+app.post("/api/groups/join/:groupId", requireAuth, async (req, res) => {
   try {
-    const { groupId, nickname } = req.body;
-    if (!groupId || !nickname)
-      return res.status(400).json({ message: "Missing groupId or nickname" });
+    const { groupId } = req.params;
+    const { nickname } = req.body;
+
+    if (!nickname)
+      return res.status(400).json({ message: "Nickname is required" });
 
     const group = await SupportGroup.findById(groupId);
     if (!group) return res.status(404).json({ message: "Group not found" });
@@ -284,14 +286,15 @@ app.post("/api/groups/join", requireAuth, async (req, res) => {
     group.members.push({ userId: req.userId, nickname });
     await group.save();
 
-    res.json(group);
+    res.json({ message: "Joined group", group });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-
-// ⭐⭐⭐ SOCKET.IO REAL-TIME CHAT ⭐⭐⭐
+// ---------------------------
+// SOCKET.IO CHAT
+// ---------------------------
 const chatRooms = {};
 
 io.on("connection", (socket) => {
@@ -361,7 +364,7 @@ io.on("connection", (socket) => {
   });
 });
 
-// ⭐ FRONTEND SERVING  
+// ⭐ SERVE FRONTEND
 const frontendPath = path.join(__dirname, "../frontend/dist");
 console.log("Serving frontend from:", frontendPath);
 
