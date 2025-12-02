@@ -361,7 +361,7 @@ io.on("connection", (socket) => {
   });
 });
 
-// ⭐ FRONTEND SERVING
+// ⭐ FRONTEND SERVING  
 const frontendPath = path.join(__dirname, "../frontend/dist");
 console.log("Serving frontend from:", frontendPath);
 
