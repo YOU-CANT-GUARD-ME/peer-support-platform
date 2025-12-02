@@ -292,6 +292,43 @@ app.post("/api/groups/join/:groupId", requireAuth, async (req, res) => {
   }
 });
 
+// GET /api/groups/:groupId
+app.get("/api/groups/:groupId", requireAuth, async (req, res) => {
+  try {
+    const group = await SupportGroup.findById(req.params.groupId);
+    if (!group) return res.status(404).json({ message: "Group not found" });
+
+    res.json({
+      _id: group._id,
+      name: group.name,
+      category: group.category,
+      desc: group.desc,
+      limit: group.limit,
+      membersCount: group.members.length,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// GET /api/groups/:groupId/members
+app.get("/api/groups/:groupId/members", requireAuth, async (req, res) => {
+  try {
+    const group = await SupportGroup.findById(req.params.groupId);
+    if (!group) return res.status(404).json({ message: "Group not found" });
+
+    const members = group.members.map((m) => ({
+      id: m.userId,
+      name: m.nickname
+    }));
+
+    res.json(members);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 // Leave group (탈퇴)
 app.post("/api/groups/leave/:groupId", requireAuth, async (req, res) => {
   try {
@@ -340,6 +377,22 @@ app.get("/api/groups/my-group", requireAuth, async (req, res) => {
   }
 });
 
+// ⭐ GET /api/groups/:groupId/members - 멤버 리스트
+app.get("/api/groups/:groupId/members", requireAuth, async (req, res) => {
+  try {
+    const { groupId } = req.params;
+
+    const group = await SupportGroup.findById(groupId)
+      .populate("members.userId", "name email nickname");
+
+    if (!group) return res.status(404).json({ message: "Group not found" });
+
+    res.json(group.members);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 // ---------------------------
 // SOCKET.IO CHAT
