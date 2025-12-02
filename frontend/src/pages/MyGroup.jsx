@@ -1,39 +1,33 @@
-// 📌 src/pages/MyGroupPage.jsx
-
-import React, { useState, useEffect } from "react";
+// src/pages/MyGroup.jsx
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../css/MyGroup.css";
 import ProfileIcon from "../assets/profile.jpg";
-import { useNavigate } from "react-router-dom";
 
 export default function MyGroup() {
   const navigate = useNavigate();
-
   const API = "http://localhost:5000/api";
   const token = localStorage.getItem("token");
 
   const [nickname, setNickname] = useState("");
   const [tempNickname, setTempNickname] = useState("");
   const [isNicknameModalOpen, setIsNicknameModalOpen] = useState(false);
-
   const [groupInfo, setGroupInfo] = useState(null);
   const [members, setMembers] = useState([]);
 
-  // 1️⃣ Load user info
   useEffect(() => {
     if (!token) return;
-    loadUser();
+    loadUserAndGroup();
   }, []);
 
-  async function loadUser() {
+  const loadUserAndGroup = async () => {
     try {
-      const res = await fetch(`${API}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) return;
 
       const data = await res.json();
       const userNick = data.user.nickname || "";
-      const currentGroupId = data.user.currentGroupId || "";
+      const userGroup = data.user.currentGroupId || "";
 
       setNickname(userNick);
 
@@ -42,116 +36,89 @@ export default function MyGroup() {
         return;
       }
 
-      if (currentGroupId) {
-        // 그룹 이미 속해있으면 joinGroup 대신 정보만 로드
-        await loadGroup(currentGroupId);
-        await loadMembers(currentGroupId);
+      if (userGroup) {
+        await loadGroup(userGroup);
+        await loadMembers(userGroup);
       }
     } catch (err) {
       console.error(err);
-    }
-  }
-
-  // 2️⃣ Join group
-  async function joinGroup(nick, groupId = groupInfo?._id) {
-    if (!groupId) return;
-    try {
-      const res = await fetch(`${API}/groups/join`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ groupId, nickname: nick }),
-      });
-
-      const data = await res.json();
-
-      // 이미 그룹 속한 경우도 load
-      if (!res.ok && data.message === "Already in a group") {
-        await loadGroup(groupId);
-        await loadMembers(groupId);
-        return;
-      }
-
-      if (!res.ok) return;
-
-      await loadGroup(groupId);
-      await loadMembers(groupId);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  // 3️⃣ Load group info
-  async function loadGroup(groupId) {
-    if (!groupId) return;
-    try {
-      const res = await fetch(`${API}/groups/${groupId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      setGroupInfo(data);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  // 4️⃣ Load members
-  async function loadMembers(groupId) {
-    if (!groupId) return;
-    try {
-      const res = await fetch(`${API}/groups/${groupId}/members`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-
-      setMembers(
-        data.map((m) => ({
-          id: m.id,
-          name: m.name,
-          profile: ProfileIcon,
-        }))
-      );
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  // 5️⃣ Handle nickname modal
-  const handleSetNickname = async () => {
-    const newNick = tempNickname.trim();
-    if (!newNick) return;
-
-    setNickname(newNick);
-    setIsNicknameModalOpen(false);
-
-    if (groupInfo?._id) {
-      await joinGroup(newNick);
     }
   };
 
-  // 6️⃣ Leave group
+  // --- TEMP: Log raw text instead of JSON ---
+  const loadGroup = async (groupId) => {
+    try {
+      const res = await fetch(`${API}/groups/${groupId}`, { headers: { Authorization: `Bearer ${token}` } });
+      const text = await res.text();
+      console.log("Raw group response:", text);
+
+      try {
+        const data = JSON.parse(text);
+        setGroupInfo(data);
+      } catch (err) {
+        console.error("Failed to parse group JSON:", err);
+        setGroupInfo(null);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const loadMembers = async (groupId) => {
+    try {
+      const res = await fetch(`${API}/groups/${groupId}/members`, { headers: { Authorization: `Bearer ${token}` } });
+      const text = await res.text();
+      console.log("Raw members response:", text);
+
+      try {
+        const data = JSON.parse(text);
+        setMembers(data.map((m) => ({ id: m.id, name: m.name, profile: ProfileIcon })));
+      } catch (err) {
+        console.error("Failed to parse members JSON:", err);
+        setMembers([]);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  // --- END TEMP ---
+
+  const joinGroup = async (nick) => {
+    if (!groupInfo?._id) return;
+
+    try {
+      const res = await fetch(`${API}/groups/join`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ groupId: groupInfo._id, nickname: nick }),
+      });
+      if (!res.ok) return;
+      await loadGroup(groupInfo._id);
+      await loadMembers(groupInfo._id);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSetNickname = async () => {
+    const newNick = tempNickname.trim();
+    if (!newNick) return;
+    setNickname(newNick);
+    setIsNicknameModalOpen(false);
+    await joinGroup(newNick);
+  };
+
   const handleLeaveGroup = async () => {
     if (!groupInfo?._id) return;
     if (!window.confirm("정말 그룹에서 탈퇴하시겠습니까?")) return;
 
     try {
-      const res = await fetch(`${API}/groups/leave`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-
+      const res = await fetch(`${API}/groups/leave`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) {
         setGroupInfo(null);
         setMembers([]);
         setNickname("");
         navigate("/groups");
-      } else {
-        alert(data.message);
       }
     } catch (err) {
       console.error(err);
@@ -164,11 +131,7 @@ export default function MyGroup() {
         <div className="modal-backdrop">
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>그룹 입장에 필요한 닉네임을 설정하세요</h3>
-            <input
-              placeholder="닉네임 입력"
-              value={tempNickname}
-              onChange={(e) => setTempNickname(e.target.value)}
-            />
+            <input value={tempNickname} onChange={(e) => setTempNickname(e.target.value)} placeholder="닉네임 입력" />
             <button onClick={handleSetNickname}>확인</button>
           </div>
         </div>
@@ -180,35 +143,21 @@ export default function MyGroup() {
         <p>멤버 수: {members.length}명</p>
         <p>내 닉네임: {nickname || "닉네임 없음"}</p>
         <p>{groupInfo?.desc}</p>
-        {groupInfo && (
-          <button className="leave-btn" onClick={handleLeaveGroup}>
-            그룹 탈퇴
-          </button>
-        )}
+        {groupInfo && <button onClick={handleLeaveGroup}>그룹 탈퇴</button>}
       </aside>
 
       <main className="group-content">
         <h2>마이 그룹</h2>
-        <p>이 그룹에서 소통을 시작해보세요!</p>
-        <button
-          disabled={!nickname}
-          className="goto-chat btn"
-          onClick={() => navigate("/my-group/chat")}
-        >
-          채팅방 가기
-        </button>
-        <div className="mygroup-info-box">
-          <h3>공지사항</h3>
-          <p>그룹 규칙을 준수해 주세요.</p>
-        </div>
+        <button disabled={!nickname} onClick={() => navigate("/my-group/chat")}>채팅방 가기</button>
       </main>
 
       <aside className="member-sidebar">
         <h3>멤버 목록</h3>
         <div className="member-list">
+          {members.length === 0 && <p>멤버 없음</p>}
           {members.map((m) => (
             <div key={m.id} className="member-item">
-              <img src={m.profile} className="member-profile" />
+              <img src={m.profile} alt="" className="member-profile" />
               <span>{m.name}</span>
             </div>
           ))}

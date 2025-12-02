@@ -3,11 +3,10 @@ import "../css/Group.css";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-// 백엔드 URL
 const API_BASE_URL = "http://localhost:5000";
 
 /* ---------------------------
-그룹 생성 모달
+   그룹 생성 모달
 ---------------------------- */
 function GroupModal({ setIsModalOpen, onGroupCreated }) {
   const [name, setName] = useState("");
@@ -28,7 +27,7 @@ function GroupModal({ setIsModalOpen, onGroupCreated }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(newGroup),
       });
@@ -38,10 +37,12 @@ function GroupModal({ setIsModalOpen, onGroupCreated }) {
       if (res.ok) {
         onGroupCreated(data);
         setIsModalOpen(false);
-        setName(""); setLimit(""); setCategory(""); setDesc("");
+        setName("");
+        setLimit("");
+        setCategory("");
+        setDesc("");
       } else {
         alert(data.message || "그룹 생성 실패");
-        console.error("Failed:", data.message);
       }
     } catch (err) {
       console.error("Error creating group:", err);
@@ -54,6 +55,7 @@ function GroupModal({ setIsModalOpen, onGroupCreated }) {
         <h3>그룹 생성</h3>
         <input type="text" placeholder="그룹 이름" value={name} onChange={(e) => setName(e.target.value)} />
         <input type="number" placeholder="인원 제한" value={limit} onChange={(e) => setLimit(e.target.value)} />
+
         <h4>카테고리 선택</h4>
         <div className="category-selector">
           {categoryOptions.map((c) => (
@@ -66,7 +68,9 @@ function GroupModal({ setIsModalOpen, onGroupCreated }) {
             </button>
           ))}
         </div>
-        <textarea placeholder="그룹 설명을 입력하세요" value={desc} onChange={(e) => setDesc(e.target.value)} />
+
+        <textarea placeholder="그룹 설명" value={desc} onChange={(e) => setDesc(e.target.value)} />
+
         <div className="modal-buttons">
           <button onClick={() => setIsModalOpen(false)}>취소</button>
           <button onClick={handleCreate}>생성</button>
@@ -77,20 +81,79 @@ function GroupModal({ setIsModalOpen, onGroupCreated }) {
 }
 
 /* ---------------------------
-그룹 목록 UI
+   그룹 리스트
 ---------------------------- */
 function GroupList({ groups, onDelete, onLeave }) {
   const token = localStorage.getItem("token");
-  const navigate = useNavigate();
   const userId = localStorage.getItem("userId");
+  const navigate = useNavigate();
 
+  /* ---------------------------
+    새롭게 수정된 handleJoin
+  ---------------------------- */
+  const handleJoin = async (group) => {
+    const isMember = group.members?.some((m) => m.userId === userId);
+
+    // 이미 이 그룹에 가입되어 있다면 → 바로 이동
+    if (isMember) {
+      navigate("/my-group");
+      return;
+    }
+
+    // 이미 다른 그룹 가입 여부 체크
+    try {
+      const resCheck = await fetch(`${API_BASE_URL}/api/groups/my-group`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const dataCheck = await resCheck.json();
+
+      if (dataCheck.joinedGroup) {
+        alert("이미 다른 그룹에 가입되어 있습니다!");
+        navigate("/my-group");
+        return;
+      }
+    } catch (err) {
+      console.error("my-group check error:", err);
+    }
+
+    // 닉네임 입력
+    const nickname = prompt("그룹에서 사용할 닉네임을 입력하세요");
+    if (!nickname || !nickname.trim()) return alert("닉네임을 입력해주세요!");
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/groups/join/${group._id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ nickname }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("가입 완료!");
+        navigate("/my-group");
+      } else {
+        alert(data.message || "가입 실패");
+      }
+    } catch (err) {
+      console.error("Join group error:", err);
+    }
+  };
+
+  /* ---------------------------
+      그룹 삭제
+  ---------------------------- */
   const handleDeleteClick = async (id) => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/groups/${id}`, {
         method: "DELETE",
-        headers: { "Authorization": `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const data = await res.json();
@@ -102,72 +165,61 @@ function GroupList({ groups, onDelete, onLeave }) {
     }
   };
 
-  const handleLeave = async (groupId) => {
-    if (!window.confirm("정말 그룹에서 탈퇴하시겠습니까?")) return;
+  const handleLeaveClick = async (groupId) => {
+    if (!window.confirm("정말 탈퇴하시겠습니까?")) return;
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/groups/leave/${groupId}`, {
         method: "POST",
-        headers: { "Authorization": `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const data = await res.json();
-      if (res.ok) {
-        alert("그룹 탈퇴 완료!");
-        onLeave(groupId);
-      } else alert(data.message || "탈퇴 실패");
+
+      if (res.ok) onLeave(groupId);
+      else alert(data.message || "탈퇴 실패");
     } catch (err) {
-      console.error("Leave group error:", err);
-    }
-  };
-
-  const handleJoin = async (groupId) => {
-    const nickname = prompt("그룹에서 사용할 닉네임을 입력하세요");
-    if (!nickname || !nickname.trim()) return alert("닉네임을 입력해주세요!");
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/groups/join/${groupId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ groupId, nickname }), // groupId도 함께 보냄
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        alert("그룹 가입 완료!");
-        navigate("/my-group");
-      } else alert(data.message || "가입 실패");
-    } catch (err) {
-      console.error("Join group error:", err);
+      console.error("Leave error:", err);
     }
   };
 
   return (
     <div className="group-list">
       {groups.length === 0 && <p>등록된 그룹이 없습니다.</p>}
+
       {groups.map((g) => (
         <div className="group-card" key={g._id}>
           <h2>{g.name}</h2>
           <p className="g-desc">{g.desc}</p>
+
           <div className="g-info">
             <span>카테고리: {g.category}</span>
-            <span>인원: {g.members ? g.members.length : 0} / {g.limit}</span>
+            <span>
+              인원: {g.members ? g.members.length : 0} / {g.limit}
+            </span>
           </div>
-          {g.members && g.members.length > 0 && (
+
+          {g.members?.length > 0 && (
             <div className="member-names">
-              <strong>멤버:</strong> {g.members.map((m) => m.nickname).join(", ")}
+              <strong>멤버: </strong>
+              {g.members.map((m) => m.nickname).join(", ")}
             </div>
           )}
+
           <div className="group-buttons">
-            {g.members?.some(m => m.userId === userId) ? (
-              <button className="leave-btn" onClick={() => handleLeave(g._id)}>탈퇴</button>
+            {g.members?.some((m) => m.userId === userId) ? (
+              <button className="leave-btn" onClick={() => handleLeaveClick(g._id)}>
+                탈퇴
+              </button>
             ) : (
-              <button className="join-btn" onClick={() => handleJoin(g._id)}>가입</button>
+              <button className="join-btn" onClick={() => handleJoin(g)}>
+                가입
+              </button>
             )}
-            <button className="delete-btn" onClick={() => handleDeleteClick(g._id)}>삭제</button>
+
+            <button className="delete-btn" onClick={() => handleDeleteClick(g._id)}>
+              삭제
+            </button>
           </div>
         </div>
       ))}
@@ -183,7 +235,6 @@ export default function Group() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
-  // 로그인 후 가입 그룹 체크
   useEffect(() => {
     const checkMyGroup = async () => {
       const token = localStorage.getItem("token");
@@ -197,6 +248,7 @@ export default function Group() {
         if (!res.ok) return;
 
         const data = await res.json();
+
         if (data.joinedGroup) navigate("/my-group");
       } catch (err) {
         console.error("Error checking my group:", err);
@@ -206,12 +258,12 @@ export default function Group() {
     checkMyGroup();
   }, [navigate]);
 
-  // 그룹 목록 가져오기
   const fetchGroups = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/groups`, {
-        headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
+
       const data = await res.json();
       setGroups(data);
     } catch (err) {
@@ -238,15 +290,18 @@ export default function Group() {
   return (
     <div className="groups-page">
       <div className="welcome-box">
-        <motion.h1 initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: "easeOut" }}>
+        <motion.h1 initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }}>
           Welcome to Group Community
         </motion.h1>
-        <motion.p initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}>
+
+        <motion.p initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.3 }}>
           원하는 그룹을 만들고 참여해보세요.
         </motion.p>
       </div>
 
-      <div className="create-btn" onClick={() => setIsModalOpen(true)}>+</div>
+      <div className="create-btn" onClick={() => setIsModalOpen(true)}>
+        +
+      </div>
 
       <GroupList groups={groups} onDelete={handleDelete} onLeave={handleLeave} />
 
