@@ -124,7 +124,8 @@
 
 .intro-box {
   width: 500px;
-  height: 400px;
+  height: 350px;
+  line-height: 2;
   background: rgba(255, 255, 255, 0.258);
   padding: 40px;
   border-radius: 18px;
@@ -154,7 +155,7 @@
 .intro-box p,
 .intro-box ul {
   line-height: 1.6;
-  color: #444;
+  /* color: #444; */
 }
 
 .intro-box ul li {
@@ -166,7 +167,7 @@
 /* 기능 섹션 */
 /* --------------------------------------- */
 .functions {
-  background-color: #eaf2ff;
+  /* background-color: #eaf2ff; */
   height: 600px;
   display: flex;
   flex-direction: column;
@@ -191,7 +192,7 @@
 }
 
 .function {
-  background: #ffffff63;
+  /* background: #ffffff63; */
   padding: 25px;
   border-radius: 15px;
   text-align: center;
@@ -260,7 +261,7 @@
   margin-top: 80px;
   padding: 40px 20px;
   text-align: center;
-  background: #eaf2ff;
+  /* background: #eaf2ff; */
   color: #333;
   border-radius: 20px 20px 0 0;
 }

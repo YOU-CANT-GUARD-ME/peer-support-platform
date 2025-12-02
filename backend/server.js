@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import path from "path";
 import { fileURLToPath } from "url";
+import User from "./models/User.js";
 
 import Post from "./models/Post.js";
 import Diary from "./models/Diary.js";
@@ -245,10 +246,9 @@ app.delete("/api/groups/:id", requireAuth, async (req, res) => {
         .json({ message: "Group not found or unauthorized" });
 
     // 멤버들의 currentGroupId 초기화
-    const User = mongoose.model("User");
     await User.updateMany(
       { currentGroupId: deleted._id },
-      { $set: { currentGroupId: "", nickname: "" } }
+      { $set: { currentGroupId: null, groupNickname: "" } } // 수정
     );
 
     res.json({ message: "Group deleted" });
@@ -263,10 +263,9 @@ app.post("/api/groups/join/:groupId", requireAuth, async (req, res) => {
     const { groupId } = req.params;
     const { nickname } = req.body;
 
-    if (!nickname)
+    if (!nickname?.trim()) // 수정: 빈 문자열 방지
       return res.status(400).json({ message: "Nickname is required" });
 
-    const User = mongoose.model("User");
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -276,19 +275,20 @@ app.post("/api/groups/join/:groupId", requireAuth, async (req, res) => {
     const group = await SupportGroup.findById(groupId);
     if (!group) return res.status(404).json({ message: "Group not found" });
 
-    if (group.members.length >= group.limit)
-      return res.status(400).json({ message: "Group is full" });
+    if (group.members.length >= Number(group.limit))
+      return res.status(400).json({ message: "Group is full" }); // 수정: 타입 안정화
 
-    group.members.push({ userId: req.userId, nickname });
+    group.members.push({ userId: user._id, nickname });
     await group.save();
 
-    user.currentGroupId = groupId;
-    user.nickname = nickname;
+    user.currentGroupId = group._id;
+    user.groupNickname = nickname;
     await user.save();
 
     res.json({ message: "Joined group", group });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("Error in join group:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -311,30 +311,11 @@ app.get("/api/groups/:groupId", requireAuth, async (req, res) => {
   }
 });
 
-// GET /api/groups/:groupId/members
-app.get("/api/groups/:groupId/members", requireAuth, async (req, res) => {
-  try {
-    const group = await SupportGroup.findById(req.params.groupId);
-    if (!group) return res.status(404).json({ message: "Group not found" });
-
-    const members = group.members.map((m) => ({
-      id: m.userId,
-      name: m.nickname
-    }));
-
-    res.json(members);
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-
 // Leave group (탈퇴)
 app.post("/api/groups/leave/:groupId", requireAuth, async (req, res) => {
   try {
     const { groupId } = req.params;
 
-    const User = mongoose.model("User");
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -342,28 +323,37 @@ app.post("/api/groups/leave/:groupId", requireAuth, async (req, res) => {
     if (!group) return res.status(404).json({ message: "Group not found" });
 
     group.members = group.members.filter(
-      (m) => m.userId.toString() !== req.userId
+      (m) => m.userId.toString() !== user._id.toString()
     );
     await group.save();
 
-    user.currentGroupId = "";
-    user.nickname = "";
+    user.currentGroupId = null; // 안전하게 초기화
+    user.groupNickname = "";
     await user.save();
 
     res.json({ message: "Left group", group });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("Error in leave group:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-// 로그인 시 가입 그룹 여부 확인
+// GET my group
 app.get("/api/groups/my-group", requireAuth, async (req, res) => {
   try {
-    const User = mongoose.model("User");
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    // currentGroupId가 없으면 모든 그룹 반환
     if (!user.currentGroupId) {
+      const groups = await SupportGroup.find();
+      return res.json({ joinedGroup: null, groups });
+    }
+
+    // currentGroupId가 유효하지 않으면 null로 초기화 후 반환
+    if (!mongoose.Types.ObjectId.isValid(user.currentGroupId)) {
+      user.currentGroupId = null;
+      await user.save();
       const groups = await SupportGroup.find();
       return res.json({ joinedGroup: null, groups });
     }
@@ -373,11 +363,12 @@ app.get("/api/groups/my-group", requireAuth, async (req, res) => {
 
     res.json({ joinedGroup: group });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("Error in /api/groups/my-group:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-// ⭐ GET /api/groups/:groupId/members - 멤버 리스트
+// GET /api/groups/:groupId/members - 멤버 리스트
 app.get("/api/groups/:groupId/members", requireAuth, async (req, res) => {
   try {
     const { groupId } = req.params;

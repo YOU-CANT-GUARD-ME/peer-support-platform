@@ -50,9 +50,7 @@ export default function Home() {
           <motion.div className="intro-box glass-card" variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }} custom={0.2}>
             <h3>DRC란?</h3>
             <p>
-              Digetch Recovery Center의 줄임말로, 디지털 환경 속에서 지친 사람들에게 안전한 회복 공간을 제공하는 온라인 커뮤니티입니다.
-              <br /> 사용자는 고민을 나누고, 경험을 공유하며, 서로에게 실질적인 도움을 줄 수 있는 다양한 그룹에 참여할 수 있습니다.
-              <br /> DRC는 단순한 커뮤니티를 넘어, 각자의 속도에 맞춰 회복하고 성장할 수 있도록 돕는 맞춤형 소셜 플랫폼을 목표로 합니다.
+              Digetch Recovery Center(DRC)는 디지털 환경에서 지친 사람들에게 안전한 온라인 회복 공간을 제공하는 커뮤니티입니다. 사용자는 고민과 경험을 나누고 다양한 그룹에 참여하며 서로 도움을 주고받을 수 있습니다. DRC는 개인 속도에 맞춘 회복과 성장을 지원하는 맞춤형 소셜 플랫폼을 지향합니다.
             </p>
           </motion.div>
 
@@ -62,7 +60,6 @@ export default function Home() {
               <li>학교·직장 등 가까운 관계에서는 말하기 어려운 고민을 가지고 있는 분</li>
               <li>비슷한 경험을 가진 사람들과 공감하고 교류하고 싶은 분</li>
               <li>소규모 그룹에서 안전하게 대화를 나누고 싶은 분</li>
-              <li>규칙 있는 커뮤니티에서 존중 기반의 상호작용을 원하시는 분</li>
             </ul>
           </motion.div>
 

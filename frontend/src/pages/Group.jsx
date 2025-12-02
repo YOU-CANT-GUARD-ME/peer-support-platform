@@ -40,6 +40,7 @@ function GroupModal({ setIsModalOpen, onGroupCreated }) {
         setIsModalOpen(false);
         setName(""); setLimit(""); setCategory(""); setDesc("");
       } else {
+        alert(data.message || "그룹 생성 실패");
         console.error("Failed:", data.message);
       }
     } catch (err) {
@@ -81,6 +82,7 @@ function GroupModal({ setIsModalOpen, onGroupCreated }) {
 function GroupList({ groups, onDelete, onLeave }) {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
+  const userId = localStorage.getItem("userId");
 
   const handleDeleteClick = async (id) => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
@@ -91,11 +93,10 @@ function GroupList({ groups, onDelete, onLeave }) {
         headers: { "Authorization": `Bearer ${token}` },
       });
 
+      const data = await res.json();
+
       if (res.ok) onDelete(id);
-      else {
-        const data = await res.json();
-        console.error("Failed to delete group:", data.message);
-      }
+      else alert(data.message || "삭제 실패");
     } catch (err) {
       console.error("Error deleting group:", err);
     }
@@ -114,7 +115,7 @@ function GroupList({ groups, onDelete, onLeave }) {
       if (res.ok) {
         alert("그룹 탈퇴 완료!");
         onLeave(groupId);
-      } else alert(data.message);
+      } else alert(data.message || "탈퇴 실패");
     } catch (err) {
       console.error("Leave group error:", err);
     }
@@ -129,16 +130,16 @@ function GroupList({ groups, onDelete, onLeave }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ nickname }),
+        body: JSON.stringify({ groupId, nickname }), // groupId도 함께 보냄
       });
 
       const data = await res.json();
       if (res.ok) {
         alert("그룹 가입 완료!");
-        navigate("/my-group"); // 가입 후 바로 이동
-      } else alert(data.message);
+        navigate("/my-group");
+      } else alert(data.message || "가입 실패");
     } catch (err) {
       console.error("Join group error:", err);
     }
@@ -161,7 +162,7 @@ function GroupList({ groups, onDelete, onLeave }) {
             </div>
           )}
           <div className="group-buttons">
-            {g.members.some(m => m.userId === localStorage.getItem("userId")) ? (
+            {g.members?.some(m => m.userId === userId) ? (
               <button className="leave-btn" onClick={() => handleLeave(g._id)}>탈퇴</button>
             ) : (
               <button className="join-btn" onClick={() => handleJoin(g._id)}>가입</button>
@@ -192,13 +193,11 @@ export default function Group() {
         const res = await fetch(`${API_BASE_URL}/api/groups/my-group`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+
         if (!res.ok) return;
 
         const data = await res.json();
-        // ✅ 수정: data.group -> data.joinedGroup
-        if (data.joinedGroup) {
-          navigate("/my-group");
-        }
+        if (data.joinedGroup) navigate("/my-group");
       } catch (err) {
         console.error("Error checking my group:", err);
       }
@@ -210,7 +209,9 @@ export default function Group() {
   // 그룹 목록 가져오기
   const fetchGroups = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/groups`);
+      const res = await fetch(`${API_BASE_URL}/api/groups`, {
+        headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` },
+      });
       const data = await res.json();
       setGroups(data);
     } catch (err) {

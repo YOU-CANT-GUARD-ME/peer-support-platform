@@ -140,4 +140,33 @@ router.post("/leave", authMiddleware, async (req, res) => {
   }
 });
 
+// GET /api/groups/my-group
+router.get("/my-group", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user.currentGroupId) {
+      return res.json({ hasGroup: false });
+    }
+
+    const group = await SupportGroup.findById(user.currentGroupId);
+    if (!group) {
+      return res.json({ hasGroup: false });
+    }
+
+    res.json({
+      hasGroup: true,
+      groupId: group._id,
+      name: group.name,
+      category: group.category,
+      desc: group.desc,
+      membersCount: group.members.length,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 export default router;
