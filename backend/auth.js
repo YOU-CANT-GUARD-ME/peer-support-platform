@@ -95,6 +95,8 @@ router.post("/login", async (req, res) => {
   }
 });
 
+
+
 // ----------------- AUTH MIDDLEWARE -----------------
 export async function authMiddleware(req, res, next) {
   const token = req.headers.authorization?.split(" ")[1];
@@ -119,5 +121,17 @@ export async function authMiddleware(req, res, next) {
   }
 }
 
+// ----------------- GET CURRENT USER -----------------
+router.get("/me", authMiddleware, async (req, res) => {
+  try {
+    // authMiddleware에서 req.user 세팅
+    if (!req.user) return res.status(404).json({ message: "User not found" });
+    
+    res.json({ user: req.user });
+  } catch (err) {
+    console.error("GET /me ERROR:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
 
 export default router;

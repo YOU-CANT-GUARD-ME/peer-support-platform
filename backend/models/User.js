@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-
 const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
 
@@ -8,19 +7,26 @@ const userSchema = new mongoose.Schema({
 
     password: { type: String, required: true },
 
-    // ⭐ ADDED: nickname stored on the user account
+    // 로그인/계정용 닉네임
     nickname: {
         type: String,
         default: "",
     },
 
-    // ⭐ ADDED: user can only belong to ONE group at a time
+    // 현재 가입한 그룹 ID (계정당 1개 그룹만)
     currentGroupId: {
         type: String,
         default: "",
     },
-    
+
+    // 그룹 내에서 사용할 닉네임
+    groupNickname: {
+        type: String,
+        default: "",
+    },
+
 }, { timestamps: true });
+
 
 // Hash password before saving
 userSchema.pre("save", async function(next) {

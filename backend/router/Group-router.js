@@ -21,12 +21,12 @@ router.post("/join", authMiddleware, async (req, res) => {
 
     const user = await User.findById(userId);
 
-    // ⭐ Save nickname permanently
+    // Save nickname
     if (nickname && nickname.trim() !== "") {
       user.nickname = nickname.trim();
     }
 
-    // ⭐ Remove user from previous group
+    // Remove from previous group
     if (user.currentGroupId && user.currentGroupId !== groupId) {
       const oldGroup = await SupportGroup.findById(user.currentGroupId);
       if (oldGroup) {
@@ -37,7 +37,7 @@ router.post("/join", authMiddleware, async (req, res) => {
       }
     }
 
-    // ⭐ Add user to the new group if not already inside
+    // Add to new group if not already inside
     if (!group.members.some((m) => m.userId.toString() === userId)) {
       group.members.push({
         userId,
@@ -46,7 +46,7 @@ router.post("/join", authMiddleware, async (req, res) => {
       await group.save();
     }
 
-    // ⭐ Save user's active group
+    // Save user's active group
     user.currentGroupId = groupId;
     await user.save();
 
@@ -61,17 +61,48 @@ router.post("/join", authMiddleware, async (req, res) => {
 });
 
 /**
+ * GET /api/groups/:id
+ * - Returns basic group info (name, category, desc, member count)
+ */
+router.get("/:id", authMiddleware, async (req, res) => {
+  try {
+    const group = await SupportGroup.findById(req.params.id);
+    if (!group) return res.status(404).json({ message: "Group not found" });
+
+    res.json({
+      _id: group._id,
+      name: group.name,
+      category: group.category,
+      desc: group.desc,
+      memberCount: group.members.length
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+/**
  * GET /api/groups/:id/members
- * Returns list of users in a group
+ * - Returns list of users in a group
  */
 router.get("/:id/members", authMiddleware, async (req, res) => {
   try {
-    const group = await SupportGroup.findById(req.params.id)
-      .populate("members.userId", "name email nickname");
-
+    const group = await SupportGroup.findById(req.params.id);
     if (!group) return res.status(404).json({ message: "Group not found" });
 
-    res.json(group.members);
+    const members = await Promise.all(
+      group.members.map(async (m) => {
+        const user = await User.findById(m.userId);
+        return {
+          id: user._id,
+          name: user.nickname || user.name,
+          profile: "" // 프론트에서 기본 이미지 사용
+        };
+      })
+    );
+
+    res.json(members);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
@@ -80,7 +111,7 @@ router.get("/:id/members", authMiddleware, async (req, res) => {
 
 /**
  * POST /api/groups/leave
- * Removes user from group and clears currentGroupId
+ * - Removes user from group and clears currentGroupId
  */
 router.post("/leave", authMiddleware, async (req, res) => {
   const userId = req.userId;

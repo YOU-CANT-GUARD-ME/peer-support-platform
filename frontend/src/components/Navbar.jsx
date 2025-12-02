@@ -45,7 +45,7 @@ export default function Navbar() {
               </button>
               <Link to="/counsel-records" className="sidebar-btn">상담 신청 기록</Link>
               <Link to="/my-group" className="sidebar-btn">마이 그룹</Link>
-              <button className="sidebar-btn logout-btn" onClick={handleLogout}>로그아웃</button>
+              <Link to='/'><button className="sidebar-btn logout-btn" onClick={handleLogout}>로그아웃</button></Link>
             </>
           ) : (
             <>

@@ -206,7 +206,6 @@ app.delete("/api/diary/:id", requireAuth, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
 // ---------------------------
 // SUPPORT GROUPS
 // ---------------------------
@@ -245,30 +244,20 @@ app.delete("/api/groups/:id", requireAuth, async (req, res) => {
         .status(404)
         .json({ message: "Group not found or unauthorized" });
 
+    // 멤버들의 currentGroupId 초기화
+    const User = mongoose.model("User");
+    await User.updateMany(
+      { currentGroupId: deleted._id },
+      { $set: { currentGroupId: "", nickname: "" } }
+    );
+
     res.json({ message: "Group deleted" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// ---------------------------
-// AUTH FIX
-// ---------------------------
-app.get("/api/auth/me", requireAuth, async (req, res) => {
-  try {
-    const User = mongoose.model("User");
-    const user = await User.findById(req.userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    res.json({ user });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// ---------------------------
-// ⭐⭐⭐ FIXED JOIN GROUP ROUTE ⭐⭐⭐
-// ---------------------------
+// Join group (닉네임 설정 + 계정당 1개 그룹 제한)
 app.post("/api/groups/join/:groupId", requireAuth, async (req, res) => {
   try {
     const { groupId } = req.params;
@@ -277,20 +266,80 @@ app.post("/api/groups/join/:groupId", requireAuth, async (req, res) => {
     if (!nickname)
       return res.status(400).json({ message: "Nickname is required" });
 
+    const User = mongoose.model("User");
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (user.currentGroupId)
+      return res.status(400).json({ message: "Already in a group" });
+
     const group = await SupportGroup.findById(groupId);
     if (!group) return res.status(404).json({ message: "Group not found" });
 
-    if (group.members.some((m) => m.userId.toString() === req.userId))
-      return res.status(400).json({ message: "Already joined" });
+    if (group.members.length >= group.limit)
+      return res.status(400).json({ message: "Group is full" });
 
     group.members.push({ userId: req.userId, nickname });
     await group.save();
+
+    user.currentGroupId = groupId;
+    user.nickname = nickname;
+    await user.save();
 
     res.json({ message: "Joined group", group });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
+
+// Leave group (탈퇴)
+app.post("/api/groups/leave/:groupId", requireAuth, async (req, res) => {
+  try {
+    const { groupId } = req.params;
+
+    const User = mongoose.model("User");
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const group = await SupportGroup.findById(groupId);
+    if (!group) return res.status(404).json({ message: "Group not found" });
+
+    group.members = group.members.filter(
+      (m) => m.userId.toString() !== req.userId
+    );
+    await group.save();
+
+    user.currentGroupId = "";
+    user.nickname = "";
+    await user.save();
+
+    res.json({ message: "Left group", group });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// 로그인 시 가입 그룹 여부 확인
+app.get("/api/groups/my-group", requireAuth, async (req, res) => {
+  try {
+    const User = mongoose.model("User");
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (!user.currentGroupId) {
+      const groups = await SupportGroup.find();
+      return res.json({ joinedGroup: null, groups });
+    }
+
+    const group = await SupportGroup.findById(user.currentGroupId);
+    if (!group) return res.status(404).json({ message: "Group not found" });
+
+    res.json({ joinedGroup: group });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 
 // ---------------------------
 // SOCKET.IO CHAT
