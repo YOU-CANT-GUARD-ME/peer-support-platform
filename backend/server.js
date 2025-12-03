@@ -20,7 +20,7 @@ import SupportGroup from "./models/supportGroup.js";
 import ChatMessage from "./models/ChatMessage.js";
 
 // Routes
-import authRoutes from "./auth.js";
+import { authRoutes } from "./middleware/auth.js";
 import createAuthVerifyRoutes from "./authVerify.js";
 import groupRoutes from "./router/Group-router.js";
 

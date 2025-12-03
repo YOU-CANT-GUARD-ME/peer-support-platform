@@ -1,7 +1,7 @@
 // auth.js
 import express from "express";
-import User from "./models/User.js";
-import EmailVerification from "./models/EmailVerification.js";
+import User from "../models/User.js";
+import EmailVerification from "../models/EmailVerification.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -18,32 +18,24 @@ router.post("/signup", async (req, res) => {
 
   console.log("SIGNUP BODY:", req.body);
 
-  // 이메일 도메인 체크
   if (!isAllowedDomain(email)) {
     return res.status(400).json({
       message: "학교 이메일(@sdh.hs.kr)만 회원가입 가능합니다.",
     });
   }
 
-  // 이메일 인증 여부 확인
   const verifyRecord = await EmailVerification.findOne({ email });
   if (!verifyRecord || !verifyRecord.verified) {
     return res.status(400).json({ message: "이메일 인증이 완료되지 않았습니다." });
   }
 
-  // 이미 가입된 이메일 체크
   const exists = await User.findOne({ email });
   if (exists) {
     return res.status(400).json({ message: "이미 가입된 이메일입니다." });
   }
 
   try {
-    // ❌ DO NOT hash manually here; User model pre-save hook will handle it
-    const user = await User.create({
-      name,
-      email,
-      password,
-    });
+    const user = await User.create({ name, email, password });
 
     console.log("SIGNUP SUCCESS:", user.email);
 
@@ -95,8 +87,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
-
-
 // ----------------- AUTH MIDDLEWARE -----------------
 export async function authMiddleware(req, res, next) {
   const token = req.headers.authorization?.split(" ")[1];
@@ -124,9 +114,7 @@ export async function authMiddleware(req, res, next) {
 // ----------------- GET CURRENT USER -----------------
 router.get("/me", authMiddleware, async (req, res) => {
   try {
-    // authMiddleware에서 req.user 세팅
     if (!req.user) return res.status(404).json({ message: "User not found" });
-    
     res.json({ user: req.user });
   } catch (err) {
     console.error("GET /me ERROR:", err);
@@ -134,4 +122,23 @@ router.get("/me", authMiddleware, async (req, res) => {
   }
 });
 
-export default router;
+// ----------------- requireAuth HELPER -----------------
+export function requireAuth(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  if (!authHeader) return res.status(401).json({ message: "Missing Authorization header" });
+
+  const parts = authHeader.split(" ");
+  if (parts.length !== 2 || parts[0] !== "Bearer")
+    return res.status(401).json({ message: "Invalid Authorization format" });
+
+  try {
+    const payload = jwt.verify(parts[1], process.env.JWT_SECRET);
+    req.userId = payload.id;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
+}
+
+// ----------------- EXPORT ROUTER -----------------
+export { router as authRoutes };

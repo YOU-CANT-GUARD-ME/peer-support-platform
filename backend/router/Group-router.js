@@ -1,176 +1,139 @@
-// backend/routes/group-router.js
 import express from "express";
-import mongoose from "mongoose";
-import User from "../models/User.js";
 import SupportGroup from "../models/supportGroup.js";
-import authMiddleware from "../auth.js";
+import User from "../models/User.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// ----------------------
-// Get current user's group  <-- MUST BE FIRST
-// ----------------------
-// GET ALL GROUPS (missing route)
-router.get("/", async (req, res) => {
+// --- Get all groups ---
+router.get("/", requireAuth, async (req, res) => {
   try {
     const groups = await SupportGroup.find();
     res.json(groups);
   } catch (err) {
-    console.error("GROUP LIST ERROR:", err);
-    res.status(500).json({ message: "Server error" });
+    console.error(err);
+    res.status(500).json({ message: err.message });
   }
 });
 
+// --- Create a new group ---
+router.post("/", requireAuth, async (req, res) => {
+  try {
+    const { name, category, desc, limit } = req.body;
+    if (!name || !category || !desc || !limit) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
 
-router.get("/my-group", authMiddleware, async (req, res) => {
+    const newGroup = new SupportGroup({
+      name,
+      category,
+      desc,
+      limit,
+      creator: req.userId,
+      members: [{ userId: req.userId, nickname: req.body.nickname || "Anonymous" }],
+    });
+
+    await newGroup.save();
+
+    // Update user's current group
+    await User.findByIdAndUpdate(req.userId, { currentGroupId: newGroup._id });
+
+    res.status(201).json(newGroup);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// --- Get my group info ---
+router.get("/my-group", requireAuth, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
-
-    if (!user.currentGroupId) return res.json({ hasGroup: false });
+    if (!user.currentGroupId) return res.status(404).json({ message: "No group joined" });
 
     const group = await SupportGroup.findById(user.currentGroupId);
-    if (!group) {
-      user.currentGroupId = null;
-      await user.save();
-      return res.json({ hasGroup: false });
-    }
+    if (!group) return res.status(404).json({ message: "Group not found" });
 
-    res.json({
-      hasGroup: true,
-      groupId: group._id,
-      name: group.name,
-      category: group.category,
-      desc: group.desc,
-      membersCount: group.members.length,
-    });
+    res.json(group);
   } catch (err) {
-    console.error("MY GROUP ERROR:", err);
-    res.status(500).json({ message: "Server error" });
+    console.error(err);
+    res.status(500).json({ message: err.message });
   }
 });
 
-// ----------------------
-// Join group
-// ----------------------
-router.post("/join", authMiddleware, async (req, res) => {
-  const { groupId, nickname } = req.body;
-
-  if (!mongoose.Types.ObjectId.isValid(groupId)) {
-    return res.status(400).json({ message: "Invalid group ID" });
-  }
-
+// --- Get group by ID ---
+router.get("/:id", requireAuth, async (req, res) => {
   try {
-    const user = await User.findById(req.userId);
-    const group = await SupportGroup.findById(groupId);
+    const group = await SupportGroup.findById(req.params.id);
+    if (!group) return res.status(404).json({ message: "Group not found" });
+    res.json(group);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
+});
 
+// --- Get members of a group ---
+router.get("/:id/members", requireAuth, async (req, res) => {
+  try {
+    const group = await SupportGroup.findById(req.params.id);
     if (!group) return res.status(404).json({ message: "Group not found" });
 
-    if (nickname && nickname.trim()) {
-      user.nickname = nickname.trim();
-    }
+    const memberList = group.members.map((m) => ({ id: m.userId, name: m.nickname }));
+    res.json(memberList);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
+});
 
-    // Remove from old group
-    if (user.currentGroupId) {
-      const old = await SupportGroup.findById(user.currentGroupId);
-      if (old) {
-        old.members = old.members.filter(m => m.userId.toString() !== req.userId);
-        await old.save();
-      }
-    }
+// --- Join a group ---
+router.post("/join", requireAuth, async (req, res) => {
+  try {
+    const { groupId, nickname } = req.body;
+    if (!groupId || !nickname) return res.status(400).json({ message: "GroupId and nickname required" });
 
-    // Add to new group
-    if (!group.members.some(m => m.userId.toString() === req.userId)) {
-      group.members.push({ userId: req.userId, nickname: user.nickname });
+    const group = await SupportGroup.findById(groupId);
+    if (!group) return res.status(404).json({ message: "Group not found" });
+
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (!group.members.some((m) => m.userId.toString() === req.userId)) {
+      group.members.push({ userId: req.userId, nickname });
       await group.save();
     }
 
-    user.currentGroupId = groupId;
+    user.nickname = nickname;
+    user.currentGroupId = group._id;
     await user.save();
 
-    res.json({ message: "Joined group successfully", nickname: user.nickname });
+    res.json({ message: "Joined group", group });
   } catch (err) {
-    console.error("JOIN ERROR:", err);
-    res.status(500).json({ message: "Server error" });
+    console.error(err);
+    res.status(500).json({ message: err.message });
   }
 });
 
-// ----------------------
-// Get group members  <-- SPECIFIC BEFORE GENERIC
-// ----------------------
-router.get("/:id/members", authMiddleware, async (req, res) => {
-  const { id } = req.params;
-
-  if (!mongoose.Types.ObjectId.isValid(id))
-    return res.status(400).json({ message: "Invalid group ID" });
-
-  try {
-    const group = await SupportGroup.findById(id);
-    if (!group) return res.status(404).json({ message: "Group not found" });
-
-    const members = await Promise.all(
-      group.members.map(async m => {
-        const user = await User.findById(m.userId);
-        return { id: user._id, name: user.nickname || user.name };
-      })
-    );
-
-    res.json(members);
-  } catch (err) {
-    console.error("MEMBERS ERROR:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// ----------------------
-// Get single group  <-- LAST
-// ----------------------
-router.get("/:id", authMiddleware, async (req, res) => {
-  const { id } = req.params;
-
-  if (!mongoose.Types.ObjectId.isValid(id))
-    return res.status(400).json({ message: "Invalid group ID" });
-
-  try {
-    const group = await SupportGroup.findById(id);
-    if (!group) return res.status(404).json({ message: "Group not found" });
-
-    res.json({
-      _id: group._id,
-      name: group.name,
-      category: group.category,
-      desc: group.desc,
-      memberCount: group.members.length,
-    });
-  } catch (err) {
-    console.error("GROUP GET ERROR:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// ----------------------
-// Leave group
-// ----------------------
-router.post("/leave", authMiddleware, async (req, res) => {
+// --- Leave a group ---
+router.post("/leave", requireAuth, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
-    if (!user.currentGroupId)
-      return res.status(400).json({ message: "User not in a group" });
+    if (!user.currentGroupId) return res.status(400).json({ message: "Not in any group" });
 
     const group = await SupportGroup.findById(user.currentGroupId);
-    if (group) {
-      group.members = group.members.filter(
-        m => m.userId.toString() !== req.userId
-      );
-      await group.save();
-    }
+    if (!group) return res.status(404).json({ message: "Group not found" });
+
+    group.members = group.members.filter((m) => m.userId.toString() !== req.userId);
+    await group.save();
 
     user.currentGroupId = null;
     await user.save();
 
-    res.json({ message: "Left group successfully" });
+    res.json({ message: "Left group" });
   } catch (err) {
-    console.error("LEAVE ERROR:", err);
-    res.status(500).json({ message: "Server error" });
+    console.error(err);
+    res.status(500).json({ message: err.message });
   }
 });
 
