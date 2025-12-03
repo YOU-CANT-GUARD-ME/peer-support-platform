@@ -24,19 +24,23 @@ router.post("/", requireAuth, async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
+    // Fetch user to get their nickname
+    const user = await User.findById(req.userId);
+
     const newGroup = new SupportGroup({
       name,
       category,
       desc,
       limit,
       creator: req.userId,
-      members: [{ userId: req.userId, nickname: req.body.nickname || "Anonymous" }],
+      members: [{ userId: req.userId, nickname: user.nickname || "Anonymous" }],
     });
 
     await newGroup.save();
 
     // Update user's current group
-    await User.findByIdAndUpdate(req.userId, { currentGroupId: newGroup._id });
+    user.currentGroupId = newGroup._id;
+    await user.save();
 
     res.status(201).json(newGroup);
   } catch (err) {
@@ -44,6 +48,7 @@ router.post("/", requireAuth, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
 
 // --- Get my group info ---
 router.get("/my-group", requireAuth, async (req, res) => {
